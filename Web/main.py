@@ -26,7 +26,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from database import get_connection
 from deps import NotAuthenticated, get_current_user, templates
-from routers import auth, clientes, contratos, cuotas, factura, unidades, usuarios
+from routers import auth, clientes, contratos, cuotas, factura, propietarios, unidades, usuarios
 
 load_dotenv()
 
@@ -71,6 +71,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth.router)
 app.include_router(usuarios.router)
 app.include_router(clientes.router)
+app.include_router(propietarios.router)
 app.include_router(unidades.router)
 app.include_router(contratos.router)
 app.include_router(cuotas.router)
@@ -97,6 +98,7 @@ def _obtener_estadisticas() -> dict:
     ceros en vez de romper la página de inicio."""
     stats = {
         "clientes_activos": 0,
+        "propietarios_total": 0,
         "unidades_total": 0,
         "unidades_ocupadas": 0,
         "contratos_activos": 0,
@@ -108,6 +110,9 @@ def _obtener_estadisticas() -> dict:
             with conn.cursor() as cur:
                 cur.execute("SELECT COUNT(*) AS total FROM clientes WHERE estado = 'activo';")
                 stats["clientes_activos"] = cur.fetchone()["total"]
+
+                cur.execute("SELECT COUNT(*) AS total FROM propietarios WHERE estado = 'activo';")
+                stats["propietarios_total"] = cur.fetchone()["total"]
 
                 cur.execute("SELECT COUNT(*) AS total FROM unidades;")
                 stats["unidades_total"] = cur.fetchone()["total"]

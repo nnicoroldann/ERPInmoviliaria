@@ -26,6 +26,10 @@
             <div class="stat-label">Clientes activos</div>
         </div>
         <div class="stat-card card-anim">
+            <div class="stat-value">{{ stats.propietarios_total }}</div>
+            <div class="stat-label">Propietarios</div>
+        </div>
+        <div class="stat-card card-anim">
             <div class="stat-value">{{ stats.unidades_ocupadas }}/{{ stats.unidades_total }}</div>
             <div class="stat-label">Unidades ocupadas</div>
         </div>
@@ -47,6 +51,13 @@
             </div>
             <h2>Clientes</h2>
             <p>Datos de contacto y estado de cada cliente.</p>
+        </a>
+        <a href="/propietarios" class="card card-anim">
+            <div class="card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
+            </div>
+            <h2>Propietarios</h2>
+            <p>Dueños de cada unidad y sus datos para liquidar el alquiler.</p>
         </a>
         <a href="/unidades" class="card card-anim">
             <div class="card-icon">
