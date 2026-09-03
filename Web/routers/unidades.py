@@ -2,17 +2,20 @@
 routers/unidades.py
 
 CRUD completo de la tabla unidades.
+
+Permisos:
+- Ver el listado: cualquier usuario con sesión iniciada.
+- Crear / editar / eliminar: solo rol admin (y con token CSRF válido).
 """
 
 import psycopg2
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 
 from database import get_connection
+from deps import get_current_user, require_admin, templates, verify_csrf
 
 router = APIRouter(prefix="/unidades", tags=["unidades"])
-templates = Jinja2Templates(directory="templates")
 
 COLUMNS = [
     {"key": "id", "label": "ID"},
@@ -46,7 +49,7 @@ FIELDS = [
 
 
 @router.get("")
-def listar(request: Request):
+def listar(request: Request, user: dict = Depends(get_current_user)):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -65,7 +68,7 @@ def listar(request: Request):
 
 
 @router.get("/nuevo")
-def form_nuevo(request: Request):
+def form_nuevo(request: Request, user: dict = Depends(require_admin)):
     return templates.TemplateResponse("form.html", {
         "request": request,
         "title": "Nueva unidad",
@@ -82,6 +85,8 @@ def crear(
     identificador_interno: str = Form(""),
     estado: str = Form("vacia"),
     tiene_gas: str = Form(None),
+    user: dict = Depends(require_admin),
+    _csrf: bool = Depends(verify_csrf),
 ):
     conn = get_connection()
     try:
@@ -103,7 +108,7 @@ def crear(
 
 
 @router.get("/{unidad_id}/editar")
-def form_editar(request: Request, unidad_id: int):
+def form_editar(request: Request, unidad_id: int, user: dict = Depends(require_admin)):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -128,6 +133,8 @@ def editar(
     identificador_interno: str = Form(""),
     estado: str = Form("vacia"),
     tiene_gas: str = Form(None),
+    user: dict = Depends(require_admin),
+    _csrf: bool = Depends(verify_csrf),
 ):
     conn = get_connection()
     try:
@@ -150,7 +157,7 @@ def editar(
 
 
 @router.post("/{unidad_id}/eliminar")
-def eliminar(unidad_id: int):
+def eliminar(unidad_id: int, user: dict = Depends(require_admin), _csrf: bool = Depends(verify_csrf)):
     conn = get_connection()
     try:
         with conn.cursor() as cur:

@@ -1,0 +1,10 @@
+# Dependencias de la aplicación web (ERP Inmobiliarias)
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+starlette==0.47.2
+Jinja2==3.1.2
+python-multipart==0.0.20
+python-dotenv==1.2.1
+psycopg2-binary==2.9.12
+bcrypt==4.2.1
+itsdangerous==2.2.0

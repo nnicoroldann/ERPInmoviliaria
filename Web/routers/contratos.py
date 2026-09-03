@@ -4,17 +4,20 @@ routers/contratos.py
 CRUD completo de la tabla contratos. Los campos cliente_id y
 unidad_id se muestran como selects, cargados dinámicamente desde
 las tablas clientes y unidades.
+
+Permisos:
+- Ver el listado: cualquier usuario con sesión iniciada.
+- Crear / editar / eliminar: solo rol admin (y con token CSRF válido).
 """
 
 import psycopg2
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 
 from database import get_connection
+from deps import get_current_user, require_admin, templates, verify_csrf
 
 router = APIRouter(prefix="/contratos", tags=["contratos"])
-templates = Jinja2Templates(directory="templates")
 
 COLUMNS = [
     {"key": "id", "label": "ID"},
@@ -70,7 +73,7 @@ def _campos(conn):
 
 
 @router.get("")
-def listar(request: Request):
+def listar(request: Request, user: dict = Depends(get_current_user)):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -89,7 +92,7 @@ def listar(request: Request):
 
 
 @router.get("/nuevo")
-def form_nuevo(request: Request):
+def form_nuevo(request: Request, user: dict = Depends(require_admin)):
     conn = get_connection()
     try:
         fields = _campos(conn)
@@ -114,6 +117,8 @@ def crear(
     dia_vencimiento: int = Form(...),
     deposito: float = Form(0),
     estado: str = Form("activo"),
+    user: dict = Depends(require_admin),
+    _csrf: bool = Depends(verify_csrf),
 ):
     conn = get_connection()
     try:
@@ -141,7 +146,7 @@ def crear(
 
 
 @router.get("/{contrato_id}/editar")
-def form_editar(request: Request, contrato_id: int):
+def form_editar(request: Request, contrato_id: int, user: dict = Depends(require_admin)):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -170,6 +175,8 @@ def editar(
     dia_vencimiento: int = Form(...),
     deposito: float = Form(0),
     estado: str = Form("activo"),
+    user: dict = Depends(require_admin),
+    _csrf: bool = Depends(verify_csrf),
 ):
     conn = get_connection()
     try:
@@ -194,7 +201,7 @@ def editar(
 
 
 @router.post("/{contrato_id}/eliminar")
-def eliminar(contrato_id: int):
+def eliminar(contrato_id: int, user: dict = Depends(require_admin), _csrf: bool = Depends(verify_csrf)):
     conn = get_connection()
     try:
         with conn.cursor() as cur:

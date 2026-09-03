@@ -1,139 +1,292 @@
+/* ============================================================
+   Mini-ERP de Alquileres — hoja de estilos
+   Estructura:
+   1. Fuentes y reset
+   2. Fondo general (degradé azul)
+   3. Barra de navegación + logo
+   4. Contenedor de contenido ("hoja" blanca)
+   5. Tarjetas de inicio
+   6. Botones
+   7. Tabla
+   8. Formularios
+   9. Alertas
+   10. Responsive
+   ============================================================ */
+
+/* ---------- 1. Fuentes y reset ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
 * { box-sizing: border-box; }
 
-body {
-    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-    margin: 0;
-    background: #f4f5f7;
-    color: #1f2430;
+html, body {
+    height: 100%;
 }
 
+body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #16233a;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+    font-family: 'Sora', 'Inter', sans-serif;
+    letter-spacing: -0.01em;
+}
+
+a { color: inherit; }
+
+/* ---------- 2. Fondo general (degradé azul medianoche -> celeste) ---------- */
+body {
+    min-height: 100vh;
+    background-color: #04101f;
+    background-image:
+        radial-gradient(1100px 700px at 8% -10%, #123a72 0%, transparent 55%),
+        radial-gradient(1400px 900px at 110% 10%, #bfe0ff 0%, transparent 45%),
+        linear-gradient(160deg, #030b1a 0%, #0e2a54 32%, #1f5aa8 60%, #4f9fe0 82%, #cfe8ff 100%);
+    background-attachment: fixed;
+}
+
+/* ---------- 3. Barra de navegación + logo ---------- */
 .navbar {
-    background: #1f2937;
-    color: white;
-    padding: 14px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
+    padding: 14px 28px;
+    background: rgba(3, 11, 26, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 20;
 }
 
 .navbar .brand {
-    color: white;
-    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff;
     text-decoration: none;
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
     font-size: 18px;
 }
 
+/* Logo real de la marca */
+.brand .logo-mark {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 30% 30%, #123a72, #04101f);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12), 0 4px 14px rgba(3, 11, 26, 0.5);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.brand .logo-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.brand:hover .logo-mark {
+    transform: rotate(-6deg) scale(1.05);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25), 0 6px 18px rgba(3, 11, 26, 0.6);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .nav-links a {
-    color: #d1d5db;
+    position: relative;
+    color: rgba(255, 255, 255, 0.75);
     text-decoration: none;
-    margin-left: 18px;
     font-size: 14px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 7px;
+    transition: color 0.15s ease, background 0.15s ease;
 }
 
 .nav-links a:hover {
-    color: white;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
 }
 
+.nav-links a.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- 4. Contenedor de contenido ---------- */
 .container {
-    max-width: 960px;
-    margin: 30px auto;
+    max-width: 980px;
+    margin: 40px auto 60px;
     padding: 0 20px;
 }
-
-h1 { margin-bottom: 4px; }
 
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
+h1 {
+    color: #ffffff;
+    font-size: 26px;
+    margin: 0 0 4px 0;
+}
+
+.container > p {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* ---------- 5. Tarjetas de inicio ---------- */
 .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 16px;
-    margin-top: 24px;
+    margin-top: 26px;
 }
 
 .card {
-    background: white;
-    border-radius: 10px;
-    padding: 18px;
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 14px;
+    padding: 20px;
     text-decoration: none;
     color: inherit;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    transition: transform 0.1s ease;
+    box-shadow: 0 10px 24px rgba(3, 11, 26, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.card:hover { transform: translateY(-2px); }
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 30px rgba(3, 11, 26, 0.32);
+}
 
-.card h2 { margin: 0 0 6px 0; font-size: 18px; }
-.card p { margin: 0; color: #6b7280; font-size: 14px; }
+.card h2 {
+    margin: 0 0 6px 0;
+    font-size: 17px;
+    color: #0e2a54;
+}
 
+.card p {
+    margin: 0;
+    color: #5b6b85;
+    font-size: 14px;
+}
+
+/* ---------- 6. Botones ---------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 9px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+    background: linear-gradient(135deg, #e8b463, #e0a640);
+    color: #2a1a02;
+    box-shadow: 0 6px 16px rgba(224, 166, 64, 0.4);
+}
+
+.btn-primary:hover {
+    filter: brightness(1.06);
+    box-shadow: 0 8px 20px rgba(224, 166, 64, 0.5);
+}
+
+.btn-small {
+    background: #eef2f9;
+    color: #1f2a3c;
+    padding: 7px 12px;
+    font-size: 13px;
+    box-shadow: none;
+}
+
+.btn-small:hover { background: #dfe6f2; }
+
+.btn-danger {
+    background: #fdecec;
+    color: #b91c1c;
+    padding: 7px 12px;
+    font-size: 13px;
+    box-shadow: none;
+}
+
+.btn-danger:hover { background: #fbd7d7; }
+
+/* ---------- 7. Tabla ---------- */
 .table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    box-shadow: 0 10px 24px rgba(3, 11, 26, 0.25);
 }
 
 .table th, .table td {
-    padding: 10px 14px;
+    padding: 12px 16px;
     text-align: left;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #eef1f6;
     font-size: 14px;
 }
 
 .table th {
-    background: #f9fafb;
+    background: #0e2a54;
+    color: #ffffff;
+    font-family: 'Sora', sans-serif;
     font-weight: 600;
-    color: #374151;
+    font-size: 13px;
+    letter-spacing: 0.01em;
 }
 
-.actions { white-space: nowrap; }
+.table tbody tr:hover { background: #f5f8fd; }
+.table tbody tr:last-child td { border-bottom: none; }
+
+.actions { white-space: nowrap; display: flex; gap: 6px; }
 
 .empty {
-    background: white;
-    padding: 30px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px 30px;
     text-align: center;
-    border-radius: 8px;
-    color: #6b7280;
+    border-radius: 14px;
+    color: #5b6b85;
+    box-shadow: 0 10px 24px rgba(3, 11, 26, 0.2);
 }
 
-.btn {
-    display: inline-block;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn-primary { background: #2563eb; color: white; }
-.btn-primary:hover { background: #1d4ed8; }
-
-.btn-small { background: #e5e7eb; color: #1f2430; padding: 6px 10px; font-size: 13px; }
-.btn-small:hover { background: #d1d5db; }
-
-.btn-danger { background: #fee2e2; color: #b91c1c; }
-.btn-danger:hover { background: #fecaca; }
-
+/* ---------- 8. Formularios ---------- */
 .form {
-    background: white;
-    padding: 24px;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    background: rgba(255, 255, 255, 0.97);
+    padding: 28px;
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(3, 11, 26, 0.25);
     max-width: 480px;
 }
 
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 18px;
     display: flex;
     flex-direction: column;
 }
@@ -141,36 +294,284 @@ h1 { margin-bottom: 4px; }
 .form-group label {
     font-size: 13px;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     color: #374151;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-    padding: 9px 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+    padding: 10px 12px;
+    border: 1px solid #d7dee8;
+    border-radius: 8px;
     font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4f9fe0;
+    box-shadow: 0 0 0 3px rgba(79, 159, 224, 0.18);
 }
 
 .form-group input[type="checkbox"] {
     width: 18px;
     height: 18px;
     align-self: flex-start;
+    accent-color: #1f5aa8;
 }
 
 .help {
     color: #9ca3af;
     margin-top: 4px;
+    font-size: 12px;
 }
 
+.form .btn { margin-top: 4px; margin-right: 6px; }
+
+/* ---------- 9. Alertas ---------- */
 .alert {
-    padding: 12px 16px;
-    border-radius: 8px;
+    padding: 13px 16px;
+    border-radius: 10px;
     margin-bottom: 20px;
     font-size: 14px;
+    font-weight: 500;
 }
 
 .alert-ok { background: #dcfce7; color: #166534; }
 .alert-error { background: #fee2e2; color: #b91c1c; }
+
+/* ---------- 10. Responsive ---------- */
+@media (max-width: 640px) {
+    .navbar { padding: 12px 16px; }
+    .nav-links { gap: 0; }
+    .nav-links a { padding: 8px 10px; font-size: 13px; }
+    .container { margin: 24px auto 40px; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .table { display: block; overflow-x: auto; }
+}
+/* ============================================================
+   11. Animaciones y efectos generales
+   ============================================================ */
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes auroraShift {
+    0%   { background-position: 0% 0%, 100% 0%; }
+    50%  { background-position: 20% 15%, 80% 10%; }
+    100% { background-position: 0% 0%, 100% 0%; }
+}
+
+@keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 6px 16px rgba(224, 166, 64, 0.4); }
+    50%      { box-shadow: 0 8px 26px rgba(224, 166, 64, 0.65); }
+}
+
+/* Capa animada sutil sobre el fondo, para dar sensación de movimiento */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+        radial-gradient(900px 600px at 10% 0%, rgba(79, 159, 224, 0.25), transparent 60%),
+        radial-gradient(900px 600px at 100% 20%, rgba(224, 166, 64, 0.12), transparent 55%);
+    background-repeat: no-repeat;
+    animation: auroraShift 22s ease-in-out infinite;
+}
+
+.navbar, .container { position: relative; z-index: 1; }
+
+.fade-in { animation: fadeIn 0.45s ease both; }
+
+.card-anim {
+    animation: fadeInUp 0.4s ease both;
+}
+.cards .card-anim:nth-child(1) { animation-delay: 0.02s; }
+.cards .card-anim:nth-child(2) { animation-delay: 0.07s; }
+.cards .card-anim:nth-child(3) { animation-delay: 0.12s; }
+.cards .card-anim:nth-child(4) { animation-delay: 0.17s; }
+.cards .card-anim:nth-child(5) { animation-delay: 0.22s; }
+.cards .card-anim:nth-child(6) { animation-delay: 0.27s; }
+
+.card-admin {
+    border: 1px solid rgba(224, 166, 64, 0.55);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(255, 248, 235, 0.97));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body::before { animation: none; }
+    .fade-in, .card-anim { animation: none; }
+    * { scroll-behavior: auto !important; }
+}
+
+/* ============================================================
+   12. Sesión: chip de usuario y logout
+   ============================================================ */
+
+.nav-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f9fe0, #1f5aa8);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.user-name {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.user-role {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 999px;
+    display: inline-block;
+    width: fit-content;
+}
+
+.user-role.role-admin {
+    background: rgba(224, 166, 64, 0.22);
+    color: #e0a640;
+}
+
+.user-role.role-usuario {
+    background: rgba(79, 159, 224, 0.22);
+    color: #9fd1ff;
+}
+
+.logout-form { margin: 0; }
+.logout-form .btn { margin: 0; }
+
+.tag-yo { color: rgba(22, 35, 58, 0.5); font-size: 12px; }
+
+.tag-activo { color: #166534; font-weight: 600; font-size: 13px; }
+.tag-inactivo { color: #b91c1c; font-weight: 600; font-size: 13px; }
+
+.btn-block { width: 100%; }
+
+.btn-primary { animation: none; }
+.btn-primary:hover { animation: pulseGlow 1.4s ease-in-out infinite; }
+
+/* ============================================================
+   13. Páginas de autenticación (login / registro)
+   ============================================================ */
+
+.auth-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0 40px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 18px;
+    padding: 36px 32px;
+    box-shadow: 0 16px 40px rgba(3, 11, 26, 0.35);
+    text-align: center;
+}
+
+.auth-logo {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 0 0 3px rgba(79, 159, 224, 0.25), 0 6px 20px rgba(3, 11, 26, 0.3);
+}
+
+.auth-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.auth-card h1 {
+    color: #0e2a54;
+    font-size: 22px;
+    margin: 0 0 4px;
+}
+
+.auth-sub {
+    color: #5b6b85;
+    font-size: 13px;
+    margin: 0 0 20px;
+}
+
+.auth-form { text-align: left; max-width: none; box-shadow: none; padding: 0; }
+
+.auth-switch {
+    margin: 18px 0 0;
+    font-size: 13px;
+    color: #5b6b85;
+}
+
+.auth-switch a {
+    color: #1f5aa8;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-switch a:hover { text-decoration: underline; }
+
+/* ============================================================
+   14. Responsive (sesión y auth)
+   ============================================================ */
+
+@media (max-width: 640px) {
+    .nav-user { gap: 8px; }
+    .user-info { display: none; }
+    .auth-card { padding: 28px 20px; }
+}
+
+.nav-links a.nav-cta {
+    background: linear-gradient(135deg, #e8b463, #e0a640);
+    color: #2a1a02;
+    font-weight: 700;
+}
+
+.nav-links a.nav-cta:hover {
+    background: linear-gradient(135deg, #edc47d, #e6b155);
+    color: #2a1a02;
+}

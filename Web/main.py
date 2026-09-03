@@ -1,26 +1,74 @@
 """
 main.py
 
-Punto de entrada de la aplicación web del mini-ERP de alquileres.
+Punto de entrada de la aplicación web del ERP Inmobiliarias.
 
 Para correrlo:
     uvicorn main:app --reload
 
 Y abrís en el navegador: http://127.0.0.1:8000
+
+Seguridad:
+- Requiere SECRET_KEY en el .env (usada para firmar la cookie de sesión).
+- Sesión vía cookie firmada (SessionMiddleware), no hay tokens en la URL.
+- Cabeceras de seguridad básicas en cada respuesta.
+- ENTORNO=produccion en el .env activa cookies "secure" (solo HTTPS) y HSTS.
 """
 
-from fastapi import FastAPI, Request
+import os
+
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.sessions import SessionMiddleware
 
-from routers import clientes, unidades, contratos, cuotas, factura
+from deps import NotAuthenticated, get_current_user, templates
+from routers import auth, clientes, contratos, cuotas, factura, unidades, usuarios
 
-app = FastAPI(title="Mini-ERP de Alquileres")
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "Falta SECRET_KEY en el archivo .env. Generá una y agregala, por ejemplo:\n"
+        '  python3 -c "import secrets; print(secrets.token_hex(32))"\n'
+        "y pegá el resultado como SECRET_KEY=... en Web/.env"
+    )
+
+ENTORNO = os.getenv("ENTORNO", "desarrollo").strip().lower()
+COOKIE_SEGURA = ENTORNO == "produccion"
+
+app = FastAPI(title="ERP Inmobiliarias")
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SECRET_KEY,
+    session_cookie="erp_session",
+    same_site="lax",
+    https_only=COOKIE_SEGURA,
+    max_age=60 * 60 * 8,  # la sesión dura 8 horas
+)
+
+
+@app.middleware("http")
+async def cabeceras_de_seguridad(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    if COOKIE_SEGURA:
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+    return response
+
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-templates = Jinja2Templates(directory="templates")
-
+# Rutas de autenticación primero, después el resto de módulos del ERP.
+app.include_router(auth.router)
+app.include_router(usuarios.router)
 app.include_router(clientes.router)
 app.include_router(unidades.router)
 app.include_router(contratos.router)
@@ -28,6 +76,20 @@ app.include_router(cuotas.router)
 app.include_router(factura.router)
 
 
+@app.exception_handler(NotAuthenticated)
+async def manejar_no_autenticado(request: Request, exc: NotAuthenticated):
+    return RedirectResponse(url=f"/login?next={exc.next_url}", status_code=303)
+
+
+@app.exception_handler(StarletteHTTPException)
+async def manejar_http_exception(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 403:
+        return templates.TemplateResponse("403.html", {"request": request}, status_code=403)
+    if exc.status_code == 404:
+        return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+
+
 @app.get("/")
-def home(request: Request):
+def home(request: Request, user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("index.html", {"request": request})

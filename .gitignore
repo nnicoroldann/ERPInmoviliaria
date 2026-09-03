@@ -4,3 +4,6 @@ Web/.env
 *.pyc
 .DS_Store
 venv/
+.idea/
+.vscode/
+*.log

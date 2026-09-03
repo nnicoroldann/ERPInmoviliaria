@@ -1,6 +1,42 @@
 {% extends "base.html" %}
-{% block title %}Inicio - Mini-ERP{% endblock %}
+{% block title %}Inicio - ERP Inmobiliarias{% endblock %}
 {% block content %}
-    <h1>Bienvenido</h1>
-    <p>Elegí una sección del menú para empezar.</p>
+    {% set user = current_user(request) %}
+    <h1>Hola, {{ user.nombre_usuario }} 👋</h1>
+    <p>
+        {% if user.rol == 'admin' %}
+            Tenés acceso completo: podés ver, crear, editar y eliminar registros, y administrar usuarios.
+        {% else %}
+            Tu cuenta tiene acceso de solo lectura a las siguientes secciones.
+        {% endif %}
+    </p>
+
+    <div class="cards">
+        <a href="/clientes" class="card card-anim">
+            <h2>Clientes</h2>
+            <p>Datos de contacto y estado de cada cliente.</p>
+        </a>
+        <a href="/unidades" class="card card-anim">
+            <h2>Unidades</h2>
+            <p>Casas, locales y cocheras disponibles u ocupadas.</p>
+        </a>
+        <a href="/contratos" class="card card-anim">
+            <h2>Contratos</h2>
+            <p>Alquileres vigentes, finalizados y rescindidos.</p>
+        </a>
+        <a href="/cuotas" class="card card-anim">
+            <h2>Cuotas</h2>
+            <p>Pagos mensuales de cada contrato.</p>
+        </a>
+        <a href="/facturas-gas" class="card card-anim">
+            <h2>Facturas de gas</h2>
+            <p>Facturación de gas por unidad y período.</p>
+        </a>
+        {% if user.rol == 'admin' %}
+        <a href="/usuarios" class="card card-anim card-admin">
+            <h2>Usuarios</h2>
+            <p>Gestioná roles y accesos del sistema.</p>
+        </a>
+        {% endif %}
+    </div>
 {% endblock %}
