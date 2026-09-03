@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+    <h1>{{ title }}</h1>
+    <form method="post">
+        {% for field in fields %}
+        <div style="margin-bottom: 10px;">
+            <label>{{ field.label }}</label><br>
+            {% if field.type == "select" %}
+                <select name="{{ field.name }}" {% if field.required %}required{% endif %}>
+                    {% for opt in field.options %}
+                    <option value="{{ opt.value }}" {% if values.get(field.name) == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <input type="{{ field.type }}" name="{{ field.name }}"
+                       value="{{ values.get(field.name, '') }}"
+                       {% if field.required %}required{% endif %}>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit">Guardar</button>
+        <a href="{{ back_url }}">Cancelar</a>
+    </form>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+    <h1>{{ title }}</h1>
+    <p><a href="{{ add_url }}">+ Nuevo</a></p>
+    <table border="1" cellpadding="6">
+        <thead>
+            <tr>
+                {% for col in columns %}<th>{{ col.label }}</th>{% endfor %}
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                {% for col in columns %}<td>{{ row[col.key] }}</td>{% endfor %}
+                <td>
+                    <a href="{{ base_url }}/{{ row.id }}/editar">Editar</a>
+                    <form method="post" action="{{ base_url }}/{{ row.id }}/eliminar" style="display:inline"
+                          onsubmit="return confirm('¿Seguro que querés eliminar este registro?');">
+                        <button type="submit">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

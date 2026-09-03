@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Mini-ERP de Alquileres{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h2><a href="/">Mini-ERP de Alquileres</a></h2>
+        <nav>
+            <a href="/clientes">Clientes</a> |
+            <a href="/unidades">Unidades</a> |
+            <a href="/contratos">Contratos</a> |
+            <a href="/cuotas">Cuotas</a> |
+            <a href="/factura">Facturas</a>
+        </nav>
+    </header>
+    <hr>
+    {% if request.query_params.get('ok') %}
+        <p style="color: green;">{{ request.query_params.get('ok') }}</p>
+    {% endif %}
+    {% if request.query_params.get('error') %}
+        <p style="color: red;">{{ request.query_params.get('error') }}</p>
+    {% endif %}
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
