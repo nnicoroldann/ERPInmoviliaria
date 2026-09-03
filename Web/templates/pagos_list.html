@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Pagos online - ERP Inmobiliarias{% endblock %}
+{% block content %}
+    {% set colores_estado = {'aprobado': 'verde', 'pendiente': 'ambar', 'rechazado': 'rojo'} %}
+    {% set etiquetas_tipo = {'cuota': 'Alquiler', 'gas': 'Gas', 'agua': 'Agua'} %}
+    <div class="page-header">
+        <div>
+            <h1>Pagos online</h1>
+            <p style="margin:0;">{{ rows|length }} intento{{ 's' if rows|length != 1 else '' }} de pago con Mercado Pago</p>
+        </div>
+    </div>
+
+    <p class="help" style="margin:-8px 0 20px;">
+        Esto es de solo lectura: acá se ve qué intentó cobrarse por Mercado Pago y en qué quedó,
+        para poder revisar un pago que no se haya reflejado. Lo que confirma un pago de verdad es
+        el webhook de Mercado Pago, no esta pantalla.
+    </p>
+
+    {% if rows %}
+    <div class="table-wrap">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Concepto</th>
+                <th>Monto</th>
+                <th>Estado</th>
+                <th>ID de pago (Mercado Pago)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row.creado_en.strftime('%d/%m/%Y %H:%M') if row.creado_en else '' }}</td>
+                <td>{{ row.cliente_apellido }} {{ row.cliente_nombre }}</td>
+                <td>{{ etiquetas_tipo.get(row.tipo, row.tipo) }} #{{ row.referencia_id }}</td>
+                <td>${{ '%.2f'|format(row.monto) }}</td>
+                <td><span class="badge badge-{{ colores_estado.get(row.estado, 'gris') }}">{{ row.estado }}</span></td>
+                <td>{{ row.mp_payment_id or '—' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="empty">
+        <h1>Todavía no hay pagos online</h1>
+        <p>Cuando un inquilino pague una cuota o factura desde su portal, el intento va a aparecer acá.</p>
+    </div>
+    {% endif %}
+{% endblock %}

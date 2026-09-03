@@ -7,14 +7,16 @@
         'finalizado': 'gris', 'pendiente': 'ambar',
         'parcial': 'azul', 'rescindido': 'rojo', 'vencido': 'rojo',
     } %}
+    {% set estados_pagables_cuota = ['pendiente', 'vencido', 'parcial'] %}
+    {% set estados_pagables_factura = ['pendiente', 'vencido'] %}
 
     <section class="hero">
         <span class="hero-eyebrow">Portal del inquilino</span>
         <h1>Hola, {{ user.nombre_usuario }} 👋</h1>
         <p class="lead">
             Acá encontrás tu propiedad alquilada y el estado de tu cuenta: si estás al día con el
-            alquiler, el gas y el agua, o si tenés algún pago pendiente. Ante cualquier duda,
-            comunicate con la inmobiliaria.
+            alquiler, el gas y el agua, o si tenés algún pago pendiente. Podés pagar directamente
+            desde acá con Mercado Pago, o comunicarte con la inmobiliaria ante cualquier duda.
         </p>
     </section>
 
@@ -26,6 +28,7 @@
     {% endif %}
 
     {% for c in datos.contratos %}
+    {% set deuda_total = c.deuda_alquiler + (c.deuda_gas if c.tiene_gas else 0) + c.deuda_agua %}
     <p class="section-title">
         {{ c.tipo }} — {{ c.direccion }}{% if c.identificador_interno %} ({{ c.identificador_interno }}){% endif %}
         <span class="badge badge-{{ colores_estado.get(c.estado, 'gris') }}" style="margin-left:8px;">{{ c.estado }}</span>
@@ -66,6 +69,16 @@
         </div>
     </div>
 
+    {% if deuda_total %}
+    <form method="post" action="/pagos/contrato/{{ c.id }}/todo" style="margin: 4px 0 24px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+        <button type="submit" class="btn btn-primary">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Pagar todo lo pendiente (${{ '%.2f'|format(deuda_total) }}) con Mercado Pago
+        </button>
+    </form>
+    {% endif %}
+
     <details class="detalle-cuenta">
         <summary class="btn btn-small">Ver historial de pagos</summary>
 
@@ -73,7 +86,7 @@
         <p class="text-muted" style="margin:16px 0 6px;">Cuotas de alquiler</p>
         <div class="table-wrap">
         <table class="table">
-            <thead><tr><th>Mes</th><th>Monto</th><th>Estado</th><th>Fecha de pago</th></tr></thead>
+            <thead><tr><th>Mes</th><th>Monto</th><th>Estado</th><th>Fecha de pago</th><th></th></tr></thead>
             <tbody>
                 {% for cuota in c.cuotas %}
                 <tr>
@@ -81,6 +94,14 @@
                     <td>${{ '%.2f'|format(cuota.monto) }}</td>
                     <td><span class="badge badge-{{ colores_estado.get(cuota.estado, 'gris') }}">{{ cuota.estado }}</span></td>
                     <td>{{ cuota.fecha_pago.strftime('%d/%m/%Y') if cuota.fecha_pago else '—' }}</td>
+                    <td>
+                        {% if cuota.estado in estados_pagables_cuota %}
+                        <form method="post" action="/pagos/cuota/{{ cuota.id }}" style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                            <button type="submit" class="btn btn-small btn-primary">Pagar</button>
+                        </form>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -92,7 +113,7 @@
         <p class="text-muted" style="margin:16px 0 6px;">Facturas de gas</p>
         <div class="table-wrap">
         <table class="table">
-            <thead><tr><th>Período</th><th>Monto</th><th>Estado</th><th>Vencimiento</th></tr></thead>
+            <thead><tr><th>Período</th><th>Monto</th><th>Estado</th><th>Vencimiento</th><th></th></tr></thead>
             <tbody>
                 {% for f in c.facturas_gas %}
                 <tr>
@@ -100,6 +121,14 @@
                     <td>${{ '%.2f'|format(f.monto) }}</td>
                     <td><span class="badge badge-{{ colores_estado.get(f.estado, 'gris') }}">{{ f.estado }}</span></td>
                     <td>{{ f.vencimiento.strftime('%d/%m/%Y') if f.vencimiento else '—' }}</td>
+                    <td>
+                        {% if f.estado in estados_pagables_factura %}
+                        <form method="post" action="/pagos/factura-gas/{{ f.id }}" style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                            <button type="submit" class="btn btn-small btn-primary">Pagar</button>
+                        </form>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -111,7 +140,7 @@
         <p class="text-muted" style="margin:16px 0 6px;">Facturas de agua</p>
         <div class="table-wrap">
         <table class="table">
-            <thead><tr><th>Período</th><th>Monto</th><th>Estado</th><th>Vencimiento</th></tr></thead>
+            <thead><tr><th>Período</th><th>Monto</th><th>Estado</th><th>Vencimiento</th><th></th></tr></thead>
             <tbody>
                 {% for f in c.facturas_agua %}
                 <tr>
@@ -119,6 +148,14 @@
                     <td>${{ '%.2f'|format(f.monto) }}</td>
                     <td><span class="badge badge-{{ colores_estado.get(f.estado, 'gris') }}">{{ f.estado }}</span></td>
                     <td>{{ f.vencimiento.strftime('%d/%m/%Y') if f.vencimiento else '—' }}</td>
+                    <td>
+                        {% if f.estado in estados_pagables_factura %}
+                        <form method="post" action="/pagos/factura-agua/{{ f.id }}" style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                            <button type="submit" class="btn btn-small btn-primary">Pagar</button>
+                        </form>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
