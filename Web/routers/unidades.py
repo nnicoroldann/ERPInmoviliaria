@@ -27,6 +27,7 @@ COLUMNS = [
     {"key": "propietario", "label": "Propietario"},
     {"key": "estado", "label": "Estado"},
     {"key": "tiene_gas", "label": "¿Tiene gas?"},
+    {"key": "gas_cuenta", "label": "N° cuenta de gas"},
 ]
 
 ESTADOS_UNIDAD = [
@@ -59,6 +60,7 @@ def _campos(conn):
          "options": _opciones_propietarios(conn)},
         {"name": "estado", "label": "Estado", "type": "select", "required": True, "options": ESTADOS_UNIDAD},
         {"name": "tiene_gas", "label": "¿Tiene gas?", "type": "checkbox", "required": False},
+        {"name": "gas_cuenta", "label": "N° de cuenta de gas", "type": "text", "required": False, "placeholder": "Ej: 21060706"},
     ]
 
 
@@ -113,6 +115,7 @@ def crear(
     propietario_id: str = Form(""),
     estado: str = Form("vacia"),
     tiene_gas: str = Form(None),
+    gas_cuenta: str = Form(""),
     user: dict = Depends(require_admin),
     _csrf: bool = Depends(verify_csrf),
 ):
@@ -122,10 +125,10 @@ def crear(
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO unidades (tipo, direccion, identificador_interno, propietario_id, estado, tiene_gas)
-                VALUES (%s, %s, %s, %s, %s, %s);
+                INSERT INTO unidades (tipo, direccion, identificador_interno, propietario_id, estado, tiene_gas, gas_cuenta)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);
                 """,
-                (tipo, direccion, identificador_interno or None, propietario_id_val, estado, bool(tiene_gas)),
+                (tipo, direccion, identificador_interno or None, propietario_id_val, estado, bool(tiene_gas), gas_cuenta or None),
             )
         conn.commit()
     except psycopg2.errors.UniqueViolation:
@@ -164,6 +167,7 @@ def editar(
     propietario_id: str = Form(""),
     estado: str = Form("vacia"),
     tiene_gas: str = Form(None),
+    gas_cuenta: str = Form(""),
     user: dict = Depends(require_admin),
     _csrf: bool = Depends(verify_csrf),
 ):
@@ -174,10 +178,10 @@ def editar(
             cur.execute(
                 """
                 UPDATE unidades
-                SET tipo=%s, direccion=%s, identificador_interno=%s, propietario_id=%s, estado=%s, tiene_gas=%s
+                SET tipo=%s, direccion=%s, identificador_interno=%s, propietario_id=%s, estado=%s, tiene_gas=%s, gas_cuenta=%s
                 WHERE id=%s;
                 """,
-                (tipo, direccion, identificador_interno or None, propietario_id_val, estado, bool(tiene_gas), unidad_id),
+                (tipo, direccion, identificador_interno or None, propietario_id_val, estado, bool(tiene_gas), gas_cuenta or None, unidad_id),
             )
         conn.commit()
     except psycopg2.errors.UniqueViolation:

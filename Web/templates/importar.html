@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Importar Excel - ERP Inmobiliarias{% endblock %}
+{% block content %}
+    {% if error %}
+    <div id="toast-data-form" hidden data-error="{{ error }}"></div>
+    {% endif %}
+    <div class="page-header">
+        <h1>Importar Excel</h1>
+    </div>
+
+    <p class="lead" style="max-width:620px;">
+        Subí el Excel de control de la inmobiliaria (inquilinos, dueños, cocheras, gas y
+        teléfonos) para cargar todos sus datos a la base de un solo saque. Antes de guardar nada
+        vas a ver una previsualización con lo que se va a crear y los avisos de todo lo que haya
+        que revisar a mano — no se toca la base hasta que confirmes.
+    </p>
+
+    <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 20px;">
+        <div class="card card-anim">
+            <h2>Qué hojas reconoce</h2>
+            <p>Hojas que empiezan con "ALQUILERES", y las hojas "COCHERAS", "GAS" y "TELEFONOS". El resto se ignora.</p>
+        </div>
+        <div class="card card-anim">
+            <h2>Datos que faltan en el Excel</h2>
+            <p>DNI, dirección exacta y montos se completan con un valor provisorio bien visible para que los termines de cargar después.</p>
+        </div>
+        <div class="card card-anim">
+            <h2>Subir de nuevo</h2>
+            <p>Si volvés a subir el mismo Excel (o una versión más nueva, con más meses cargados) no se duplica nada: solo se agrega lo que falta.</p>
+        </div>
+    </div>
+
+    <form method="post" action="/importar/previsualizar" enctype="multipart/form-data" class="form" style="max-width:420px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+        <div class="form-group">
+            <label>Archivo Excel (.xlsx, máximo 20 MB)</label>
+            <input type="file" name="archivo" accept=".xlsx" required>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Previsualizar importación</button>
+            <a href="/" class="btn btn-small">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}

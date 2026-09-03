@@ -34,6 +34,7 @@ from routers import (
     cuotas,
     factura,
     factura_agua,
+    importar,
     inquilinos,
     pagos,
     propietarios,
@@ -93,6 +94,7 @@ app.include_router(factura.router)
 app.include_router(factura_agua.router)
 app.include_router(pagos.router)
 app.include_router(boletas.router)
+app.include_router(importar.router)
 
 
 @app.exception_handler(NotAuthenticated)
