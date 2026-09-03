@@ -1,11 +1,12 @@
 """
-routers/facturas_gas.py
+routers/factura_agua.py
 
-CRUD completo de la tabla facturas_gas. El campo unidad_id se
-muestra como select, cargado dinámicamente desde la tabla unidades.
+CRUD completo de la tabla facturas_agua. Mismo esquema y
+comportamiento que facturas_gas (routers/factura.py), pero para el
+servicio de agua.
 
 Permisos:
-- Ver el listado: cualquier usuario con sesión iniciada.
+- Ver el listado: solo personal de la inmobiliaria (admin o usuario).
 - Crear / editar / eliminar: solo rol admin (y con token CSRF válido).
 """
 
@@ -16,7 +17,7 @@ from fastapi.responses import RedirectResponse
 from database import get_connection
 from deps import require_admin, require_staff, templates, verify_csrf
 
-router = APIRouter(prefix="/facturas-gas", tags=["facturas_gas"])
+router = APIRouter(prefix="/facturas-agua", tags=["facturas_agua"])
 
 COLUMNS = [
     {"key": "id", "label": "ID"},
@@ -36,13 +37,10 @@ ESTADOS = [
 
 def _opciones_unidades(conn):
     with conn.cursor() as cur:
-        cur.execute("SELECT id, tipo, direccion, tiene_gas FROM unidades ORDER BY id;")
+        cur.execute("SELECT id, tipo, direccion FROM unidades ORDER BY id;")
         filas = cur.fetchall()
     return [
-        {
-            "value": f["id"],
-            "label": f"{f['id']} - {f['tipo']} en {f['direccion']}" + ("" if f["tiene_gas"] else " (sin gas)"),
-        }
+        {"value": f["id"], "label": f"{f['id']} - {f['tipo']} en {f['direccion']}"}
         for f in filas
     ]
 
@@ -53,7 +51,7 @@ def _campos(conn):
          "options": _opciones_unidades(conn)},
         {"name": "periodo", "label": "Período (formato YYYY-MM)", "type": "text", "required": True,
          "placeholder": "Ej: 2026-03", "help": "Formato YYYY-MM, ej: 2026-03"},
-        {"name": "monto", "label": "Monto", "type": "number", "step": "0.01", "required": True, "placeholder": "Ej: 15000"},
+        {"name": "monto", "label": "Monto", "type": "number", "step": "0.01", "required": True, "placeholder": "Ej: 8000"},
         {"name": "estado", "label": "Estado", "type": "select", "required": True, "options": ESTADOS},
         {"name": "vencimiento", "label": "Fecha de vencimiento", "type": "date", "required": False},
         {"name": "pagado_en", "label": "Fecha en que se pagó", "type": "date", "required": False},
@@ -65,17 +63,17 @@ def listar(request: Request, user: dict = Depends(require_staff)):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM facturas_gas ORDER BY id;")
+            cur.execute("SELECT * FROM facturas_agua ORDER BY id;")
             rows = cur.fetchall()
     finally:
         conn.close()
     return templates.TemplateResponse("list.html", {
         "request": request,
-        "title": "Facturas de gas",
+        "title": "Facturas de agua",
         "columns": COLUMNS,
         "rows": rows,
-        "base_url": "/facturas-gas",
-        "add_url": "/facturas-gas/nuevo",
+        "base_url": "/facturas-agua",
+        "add_url": "/facturas-agua/nuevo",
     })
 
 
@@ -88,10 +86,10 @@ def form_nuevo(request: Request, user: dict = Depends(require_admin)):
         conn.close()
     return templates.TemplateResponse("form.html", {
         "request": request,
-        "title": "Nueva factura de gas",
+        "title": "Nueva factura de agua",
         "fields": fields,
         "values": {},
-        "back_url": "/facturas-gas",
+        "back_url": "/facturas-agua",
     })
 
 
@@ -111,7 +109,7 @@ def crear(
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO facturas_gas (unidad_id, periodo, monto, estado, vencimiento, pagado_en)
+                INSERT INTO facturas_agua (unidad_id, periodo, monto, estado, vencimiento, pagado_en)
                 VALUES (%s, %s, %s, %s, %s, %s);
                 """,
                 (unidad_id, periodo, monto, estado, vencimiento or None, pagado_en or None),
@@ -119,10 +117,10 @@ def crear(
         conn.commit()
     except psycopg2.errors.UniqueViolation:
         conn.rollback()
-        return RedirectResponse("/facturas-gas/nuevo?error=Ya existe una factura para esa unidad en ese período", status_code=303)
+        return RedirectResponse("/facturas-agua/nuevo?error=Ya existe una factura para esa unidad en ese período", status_code=303)
     finally:
         conn.close()
-    return RedirectResponse("/facturas-gas?ok=Factura creada con éxito", status_code=303)
+    return RedirectResponse("/facturas-agua?ok=Factura creada con éxito", status_code=303)
 
 
 @router.get("/{factura_id}/editar")
@@ -130,7 +128,7 @@ def form_editar(request: Request, factura_id: int, user: dict = Depends(require_
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM facturas_gas WHERE id = %s;", (factura_id,))
+            cur.execute("SELECT * FROM facturas_agua WHERE id = %s;", (factura_id,))
             factura = cur.fetchone()
         fields = _campos(conn)
     finally:
@@ -140,7 +138,7 @@ def form_editar(request: Request, factura_id: int, user: dict = Depends(require_
         "title": f"Editar factura #{factura_id}",
         "fields": fields,
         "values": factura or {},
-        "back_url": "/facturas-gas",
+        "back_url": "/facturas-agua",
     })
 
 
@@ -161,7 +159,7 @@ def editar(
         with conn.cursor() as cur:
             cur.execute(
                 """
-                UPDATE facturas_gas
+                UPDATE facturas_agua
                 SET unidad_id=%s, periodo=%s, monto=%s, estado=%s, vencimiento=%s, pagado_en=%s
                 WHERE id=%s;
                 """,
@@ -170,10 +168,10 @@ def editar(
         conn.commit()
     except psycopg2.errors.UniqueViolation:
         conn.rollback()
-        return RedirectResponse(f"/facturas-gas/{factura_id}/editar?error=Ya existe otra factura para esa unidad en ese período", status_code=303)
+        return RedirectResponse(f"/facturas-agua/{factura_id}/editar?error=Ya existe otra factura para esa unidad en ese período", status_code=303)
     finally:
         conn.close()
-    return RedirectResponse("/facturas-gas?ok=Factura actualizada", status_code=303)
+    return RedirectResponse("/facturas-agua?ok=Factura actualizada", status_code=303)
 
 
 @router.post("/{factura_id}/eliminar")
@@ -181,8 +179,8 @@ def eliminar(factura_id: int, user: dict = Depends(require_admin), _csrf: bool =
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("DELETE FROM facturas_gas WHERE id = %s;", (factura_id,))
+            cur.execute("DELETE FROM facturas_agua WHERE id = %s;", (factura_id,))
         conn.commit()
     finally:
         conn.close()
-    return RedirectResponse("/facturas-gas?ok=Factura eliminada", status_code=303)
+    return RedirectResponse("/facturas-agua?ok=Factura eliminada", status_code=303)

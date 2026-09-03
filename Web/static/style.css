@@ -931,3 +931,64 @@ footer.site-footer {
     .auth-card { padding: 28px 22px; }
     #toast-container { top: auto; bottom: 14px; right: 14px; left: 14px; max-width: none; }
 }
+
+/* ---------- Portal del inquilino: cuentas + reset de contraseña ---------- */
+
+.user-role.role-inquilino { background: var(--success-bg); color: var(--success); }
+
+.text-muted { color: var(--text-muted); font-size: 12px; }
+
+.reset-pass { display: inline-block; position: relative; }
+.reset-pass summary { list-style: none; cursor: pointer; }
+.reset-pass summary::-webkit-details-marker { display: none; }
+.reset-pass[open] summary { background: var(--accent-strong); color: #fff; border-color: var(--accent-strong); }
+
+.reset-pass-form {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 20;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 210px;
+    text-align: left;
+}
+
+.reset-pass-form input[type="password"] {
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface-strong);
+    color: var(--text);
+    font-size: 13px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ---------- Portal del inquilino: tarjetas de estado de cuenta ---------- */
+
+.stat-card.stat-ok { border-color: rgba(52, 211, 153, 0.4); }
+.stat-card.stat-deuda { border-color: rgba(248, 113, 113, 0.5); }
+
+.stat-card.stat-ok .stat-value,
+.stat-card.stat-deuda .stat-value,
+.stat-card.stat-neutro .stat-value {
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+}
+.stat-card.stat-ok .stat-value { color: var(--success); }
+.stat-card.stat-deuda .stat-value { color: var(--danger); }
+.stat-card.stat-neutro .stat-value { color: var(--text-muted); }
+
+.stat-card .badge { margin-top: 8px; }
+
+.detalle-cuenta { margin: 4px 0 32px; }
+.detalle-cuenta summary { list-style: none; cursor: pointer; width: fit-content; }
+.detalle-cuenta summary::-webkit-details-marker { display: none; }

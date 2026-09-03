@@ -65,6 +65,15 @@ def require_admin(user: dict = Depends(get_current_user)) -> dict:
     return user
 
 
+def require_staff(user: dict = Depends(get_current_user)) -> dict:
+    """Dependencia: exige sesión iniciada y rol admin o usuario (personal
+    de la inmobiliaria). Bloquea el acceso a las cuentas de inquilino,
+    que solo ven su propio portal (/)."""
+    if user.get("rol") not in ("admin", "usuario"):
+        raise HTTPException(status_code=403, detail="Esta sección es solo para el personal de la inmobiliaria.")
+    return user
+
+
 def verify_csrf(request: Request, csrf_token: str = Form(...)) -> bool:
     """Dependencia: valida el token CSRF enviado por un formulario POST
     contra el guardado en la sesión del usuario."""

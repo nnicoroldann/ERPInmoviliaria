@@ -22,9 +22,12 @@ def listar(request: Request, user: dict = Depends(require_admin)):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
+            # Las cuentas de inquilino se gestionan aparte, en
+            # /usuarios/inquilinos: acá solo se listan admin/usuario
+            # (personal de la inmobiliaria).
             cur.execute(
                 "SELECT id, nombre_usuario, email, rol, activo, creado_en "
-                "FROM usuarios ORDER BY id;"
+                "FROM usuarios WHERE rol IN ('admin', 'usuario') ORDER BY id;"
             )
             rows = cur.fetchall()
     finally:
@@ -53,7 +56,12 @@ def cambiar_rol(
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("UPDATE usuarios SET rol = %s WHERE id = %s;", (rol, usuario_id))
+            # El AND protege una cuenta de inquilino de que este endpoint
+            # (pensado solo para personal admin/usuario) le cambie el rol.
+            cur.execute(
+                "UPDATE usuarios SET rol = %s WHERE id = %s AND rol IN ('admin', 'usuario');",
+                (rol, usuario_id),
+            )
         conn.commit()
     finally:
         conn.close()
@@ -77,7 +85,12 @@ def cambiar_estado(
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("UPDATE usuarios SET activo = %s WHERE id = %s;", (nuevo_estado, usuario_id))
+            # Las cuentas de inquilino se activan/desactivan desde
+            # /usuarios/inquilinos, no desde este panel de staff.
+            cur.execute(
+                "UPDATE usuarios SET activo = %s WHERE id = %s AND rol IN ('admin', 'usuario');",
+                (nuevo_estado, usuario_id),
+            )
         conn.commit()
     finally:
         conn.close()

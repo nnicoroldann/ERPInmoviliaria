@@ -45,14 +45,18 @@
 
         {% if user %}
         <div class="nav-links">
+            {% if user.rol in ('admin', 'usuario') %}
             <a href="/clientes">Clientes</a>
             <a href="/propietarios">Propietarios</a>
             <a href="/unidades">Unidades</a>
             <a href="/contratos">Contratos</a>
             <a href="/cuotas">Cuotas</a>
-            <a href="/facturas-gas">Facturas</a>
+            <a href="/facturas-gas">Gas</a>
+            <a href="/facturas-agua">Agua</a>
+            {% endif %}
             {% if user.rol == 'admin' %}
             <a href="/usuarios">Usuarios</a>
+            <a href="/usuarios/inquilinos">Inquilinos</a>
             {% endif %}
         </div>
 
@@ -62,7 +66,7 @@
                 <span class="user-avatar">{{ user.nombre_usuario[0]|upper }}</span>
                 <span class="user-info">
                     <span class="user-name">{{ user.nombre_usuario }}</span>
-                    <span class="user-role role-{{ user.rol }}">{{ 'Administrador' if user.rol == 'admin' else 'Usuario' }}</span>
+                    <span class="user-role role-{{ user.rol }}">{{ {'admin': 'Administrador', 'usuario': 'Usuario', 'inquilino': 'Inquilino'}.get(user.rol, user.rol) }}</span>
                 </span>
             </span>
             <form method="post" action="/logout" class="logout-form">

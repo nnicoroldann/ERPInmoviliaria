@@ -15,7 +15,7 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 
 from database import get_connection
-from deps import get_current_user, require_admin, templates, verify_csrf
+from deps import require_admin, require_staff, templates, verify_csrf
 
 router = APIRouter(prefix="/unidades", tags=["unidades"])
 
@@ -63,7 +63,7 @@ def _campos(conn):
 
 
 @router.get("")
-def listar(request: Request, user: dict = Depends(get_current_user)):
+def listar(request: Request, user: dict = Depends(require_staff)):
     conn = get_connection()
     try:
         with conn.cursor() as cur:

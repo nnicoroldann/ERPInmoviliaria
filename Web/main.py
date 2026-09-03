@@ -26,7 +26,18 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from database import get_connection
 from deps import NotAuthenticated, get_current_user, templates
-from routers import auth, clientes, contratos, cuotas, factura, propietarios, unidades, usuarios
+from routers import (
+    auth,
+    clientes,
+    contratos,
+    cuotas,
+    factura,
+    factura_agua,
+    inquilinos,
+    propietarios,
+    unidades,
+    usuarios,
+)
 
 load_dotenv()
 
@@ -70,12 +81,14 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Rutas de autenticación primero, después el resto de módulos del ERP.
 app.include_router(auth.router)
 app.include_router(usuarios.router)
+app.include_router(inquilinos.router)
 app.include_router(clientes.router)
 app.include_router(propietarios.router)
 app.include_router(unidades.router)
 app.include_router(contratos.router)
 app.include_router(cuotas.router)
 app.include_router(factura.router)
+app.include_router(factura_agua.router)
 
 
 @app.exception_handler(NotAuthenticated)
@@ -132,8 +145,74 @@ def _obtener_estadisticas() -> dict:
     return stats
 
 
+def _deuda(filas, campo_estado="estado", estados_deuda=("pendiente", "vencido", "parcial")):
+    """Suma el monto de las filas (cuotas o facturas) que todavía se deben."""
+    return sum(
+        (f["monto"] for f in filas if f.get(campo_estado) in estados_deuda),
+        start=0,
+    )
+
+
+def _datos_inquilino(cliente_id) -> dict:
+    """Reúne todo lo que un inquilino ve en su portal ("/"): sus datos de
+    cliente, su(s) contrato(s) con la unidad y, para cada uno, el
+    historial y la deuda de cuotas de alquiler, gas y agua."""
+    datos = {"cliente": None, "contratos": []}
+    if not cliente_id:
+        return datos
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM clientes WHERE id = %s;", (cliente_id,))
+            datos["cliente"] = cur.fetchone()
+
+            cur.execute(
+                """
+                SELECT co.*, un.tipo, un.direccion, un.identificador_interno, un.tiene_gas
+                FROM contratos co
+                JOIN unidades un ON un.id = co.unidad_id
+                WHERE co.cliente_id = %s
+                ORDER BY (co.estado = 'activo') DESC, co.id DESC;
+                """,
+                (cliente_id,),
+            )
+            contratos = cur.fetchall()
+
+            for contrato in contratos:
+                cur.execute(
+                    "SELECT * FROM cuotas WHERE contrato_id = %s ORDER BY mes DESC;",
+                    (contrato["id"],),
+                )
+                contrato["cuotas"] = cur.fetchall()
+                contrato["deuda_alquiler"] = _deuda(contrato["cuotas"])
+
+                cur.execute(
+                    "SELECT * FROM facturas_gas WHERE unidad_id = %s ORDER BY periodo DESC;",
+                    (contrato["unidad_id"],),
+                )
+                contrato["facturas_gas"] = cur.fetchall()
+                contrato["deuda_gas"] = _deuda(contrato["facturas_gas"], estados_deuda=("pendiente", "vencido"))
+
+                cur.execute(
+                    "SELECT * FROM facturas_agua WHERE unidad_id = %s ORDER BY periodo DESC;",
+                    (contrato["unidad_id"],),
+                )
+                contrato["facturas_agua"] = cur.fetchall()
+                contrato["deuda_agua"] = _deuda(contrato["facturas_agua"], estados_deuda=("pendiente", "vencido"))
+
+            datos["contratos"] = contratos
+    finally:
+        conn.close()
+    return datos
+
+
 @app.get("/")
 def home(request: Request, user: dict = Depends(get_current_user)):
+    if user.get("rol") == "inquilino":
+        return templates.TemplateResponse("mi_cuenta.html", {
+            "request": request,
+            "datos": _datos_inquilino(user.get("cliente_id")),
+        })
     return templates.TemplateResponse("index.html", {
         "request": request,
         "stats": _obtener_estadisticas(),

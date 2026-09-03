@@ -68,6 +68,10 @@ def _sesion_de(usuario: dict) -> dict:
         "nombre_usuario": usuario["nombre_usuario"],
         "email": usuario["email"],
         "rol": usuario["rol"],
+        # Solo tiene valor para cuentas de inquilino: es el cliente al que
+        # está vinculada la cuenta, y es lo que usa main.py para mostrarle
+        # únicamente su propia unidad en "/".
+        "cliente_id": usuario.get("cliente_id"),
     }
 
 

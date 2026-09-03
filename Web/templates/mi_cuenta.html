@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Mi cuenta - ERP Inmobiliarias{% endblock %}
+{% block content %}
+    {% set user = current_user(request) %}
+    {% set colores_estado = {
+        'activo': 'verde', 'pagado': 'verde',
+        'finalizado': 'gris', 'pendiente': 'ambar',
+        'parcial': 'azul', 'rescindido': 'rojo', 'vencido': 'rojo',
+    } %}
+
+    <section class="hero">
+        <span class="hero-eyebrow">Portal del inquilino</span>
+        <h1>Hola, {{ user.nombre_usuario }} 👋</h1>
+        <p class="lead">
+            Acá encontrás tu propiedad alquilada y el estado de tu cuenta: si estás al día con el
+            alquiler, el gas y el agua, o si tenés algún pago pendiente. Ante cualquier duda,
+            comunicate con la inmobiliaria.
+        </p>
+    </section>
+
+    {% if not datos.contratos %}
+    <div class="empty">
+        <h1>Todavía no tenés una unidad asignada</h1>
+        <p>Comunicate con la inmobiliaria para que te asignen tu contrato y puedas ver acá el estado de tu cuenta.</p>
+    </div>
+    {% endif %}
+
+    {% for c in datos.contratos %}
+    <p class="section-title">
+        {{ c.tipo }} — {{ c.direccion }}{% if c.identificador_interno %} ({{ c.identificador_interno }}){% endif %}
+        <span class="badge badge-{{ colores_estado.get(c.estado, 'gris') }}" style="margin-left:8px;">{{ c.estado }}</span>
+    </p>
+
+    <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 8px;">
+        <div class="card card-anim">
+            <h2>Tu contrato</h2>
+            <p>Desde {{ c.fecha_inicio.strftime('%d/%m/%Y') if c.fecha_inicio else '—' }}
+               {% if c.fecha_fin %}hasta {{ c.fecha_fin.strftime('%d/%m/%Y') }}{% endif %}</p>
+            <p>Alquiler: ${{ '%.2f'|format(c.monto_alquiler) }} — vence el día {{ c.dia_vencimiento }} de cada mes</p>
+        </div>
+    </div>
+
+    <div class="stats-strip">
+        <div class="stat-card card-anim {{ 'stat-deuda' if c.deuda_alquiler else 'stat-ok' }}">
+            <div class="stat-value">${{ '%.2f'|format(c.deuda_alquiler) }}</div>
+            <div class="stat-label">Alquiler</div>
+            <span class="badge {{ 'badge-rojo' if c.deuda_alquiler else 'badge-verde' }}">{{ 'Con deuda' if c.deuda_alquiler else 'Al día' }}</span>
+        </div>
+        {% if c.tiene_gas %}
+        <div class="stat-card card-anim {{ 'stat-deuda' if c.deuda_gas else 'stat-ok' }}">
+            <div class="stat-value">${{ '%.2f'|format(c.deuda_gas) }}</div>
+            <div class="stat-label">Gas</div>
+            <span class="badge {{ 'badge-rojo' if c.deuda_gas else 'badge-verde' }}">{{ 'Con deuda' if c.deuda_gas else 'Al día' }}</span>
+        </div>
+        {% else %}
+        <div class="stat-card card-anim stat-neutro">
+            <div class="stat-value">—</div>
+            <div class="stat-label">Gas</div>
+            <span class="badge badge-gris">No aplica</span>
+        </div>
+        {% endif %}
+        <div class="stat-card card-anim {{ 'stat-deuda' if c.deuda_agua else 'stat-ok' }}">
+            <div class="stat-value">${{ '%.2f'|format(c.deuda_agua) }}</div>
+            <div class="stat-label">Agua</div>
+            <span class="badge {{ 'badge-rojo' if c.deuda_agua else 'badge-verde' }}">{{ 'Con deuda' if c.deuda_agua else 'Al día' }}</span>
+        </div>
+    </div>
+
+    <details class="detalle-cuenta">
+        <summary class="btn btn-small">Ver historial de pagos</summary>
+
+        {% if c.cuotas %}
+        <p class="text-muted" style="margin:16px 0 6px;">Cuotas de alquiler</p>
+        <div class="table-wrap">
+        <table class="table">
+            <thead><tr><th>Mes</th><th>Monto</th><th>Estado</th><th>Fecha de pago</th></tr></thead>
+            <tbody>
+                {% for cuota in c.cuotas %}
+                <tr>
+                    <td>{{ cuota.mes }}</td>
+                    <td>${{ '%.2f'|format(cuota.monto) }}</td>
+                    <td><span class="badge badge-{{ colores_estado.get(cuota.estado, 'gris') }}">{{ cuota.estado }}</span></td>
+                    <td>{{ cuota.fecha_pago.strftime('%d/%m/%Y') if cuota.fecha_pago else '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% endif %}
+
+        {% if c.tiene_gas and c.facturas_gas %}
+        <p class="text-muted" style="margin:16px 0 6px;">Facturas de gas</p>
+        <div class="table-wrap">
+        <table class="table">
+            <thead><tr><th>Período</th><th>Monto</th><th>Estado</th><th>Vencimiento</th></tr></thead>
+            <tbody>
+                {% for f in c.facturas_gas %}
+                <tr>
+                    <td>{{ f.periodo }}</td>
+                    <td>${{ '%.2f'|format(f.monto) }}</td>
+                    <td><span class="badge badge-{{ colores_estado.get(f.estado, 'gris') }}">{{ f.estado }}</span></td>
+                    <td>{{ f.vencimiento.strftime('%d/%m/%Y') if f.vencimiento else '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% endif %}
+
+        {% if c.facturas_agua %}
+        <p class="text-muted" style="margin:16px 0 6px;">Facturas de agua</p>
+        <div class="table-wrap">
+        <table class="table">
+            <thead><tr><th>Período</th><th>Monto</th><th>Estado</th><th>Vencimiento</th></tr></thead>
+            <tbody>
+                {% for f in c.facturas_agua %}
+                <tr>
+                    <td>{{ f.periodo }}</td>
+                    <td>${{ '%.2f'|format(f.monto) }}</td>
+                    <td><span class="badge badge-{{ colores_estado.get(f.estado, 'gris') }}">{{ f.estado }}</span></td>
+                    <td>{{ f.vencimiento.strftime('%d/%m/%Y') if f.vencimiento else '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% endif %}
+
+        {% if not c.cuotas and not c.facturas_gas and not c.facturas_agua %}
+        <p class="text-muted" style="margin-top:16px;">Todavía no hay pagos cargados para esta unidad.</p>
+        {% endif %}
+    </details>
+    {% endfor %}
+{% endblock %}
