@@ -58,11 +58,11 @@ def _campos(conn):
         {"name": "contrato_id", "label": "Contrato", "type": "select", "required": True,
          "options": _opciones_contratos(conn)},
         {"name": "mes", "label": "Mes (formato YYYY-MM)", "type": "text", "required": True,
-         "help": "Ej: 2026-03"},
-        {"name": "monto", "label": "Monto", "type": "number", "step": "0.01", "required": True},
+         "placeholder": "Ej: 2026-03", "help": "Formato YYYY-MM, ej: 2026-03"},
+        {"name": "monto", "label": "Monto", "type": "number", "step": "0.01", "required": True, "placeholder": "Ej: 150000"},
         {"name": "estado", "label": "Estado", "type": "select", "required": True, "options": ESTADOS},
         {"name": "fecha_pago", "label": "Fecha de pago", "type": "date", "required": False},
-        {"name": "comprobante", "label": "Comprobante", "type": "text", "required": False},
+        {"name": "comprobante", "label": "Comprobante", "type": "text", "required": False, "placeholder": "Ej: Transferencia #4521"},
     ]
 
 

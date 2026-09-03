@@ -28,11 +28,11 @@ COLUMNS = [
 ]
 
 FIELDS = [
-    {"name": "nombre", "label": "Nombre", "type": "text", "required": True},
-    {"name": "apellido", "label": "Apellido", "type": "text", "required": True},
-    {"name": "dni_cuit", "label": "DNI/CUIT", "type": "text", "required": True},
-    {"name": "telefono", "label": "Teléfono", "type": "text", "required": False},
-    {"name": "email", "label": "Email", "type": "email", "required": False},
+    {"name": "nombre", "label": "Nombre", "type": "text", "required": True, "placeholder": "Ej: Juan"},
+    {"name": "apellido", "label": "Apellido", "type": "text", "required": True, "placeholder": "Ej: Pérez"},
+    {"name": "dni_cuit", "label": "DNI/CUIT", "type": "text", "required": True, "placeholder": "Ej: 20-12345678-9"},
+    {"name": "telefono", "label": "Teléfono", "type": "text", "required": False, "placeholder": "Ej: 11 5555-5555"},
+    {"name": "email", "label": "Email", "type": "email", "required": False, "placeholder": "Ej: juan.perez@email.com"},
     {
         "name": "estado", "label": "Estado", "type": "select", "required": True,
         "options": [

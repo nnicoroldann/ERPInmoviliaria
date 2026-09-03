@@ -24,6 +24,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
+from database import get_connection
 from deps import NotAuthenticated, get_current_user, templates
 from routers import auth, clientes, contratos, cuotas, factura, unidades, usuarios
 
@@ -90,6 +91,45 @@ async def manejar_http_exception(request: Request, exc: StarletteHTTPException):
     return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
 
 
+def _obtener_estadisticas() -> dict:
+    """Números rápidos para la portada. Si algo falla (por ejemplo,
+    una tabla vacía o un problema de conexión momentáneo) se muestran
+    ceros en vez de romper la página de inicio."""
+    stats = {
+        "clientes_activos": 0,
+        "unidades_total": 0,
+        "unidades_ocupadas": 0,
+        "contratos_activos": 0,
+        "cuotas_pendientes": 0,
+    }
+    try:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT COUNT(*) AS total FROM clientes WHERE estado = 'activo';")
+                stats["clientes_activos"] = cur.fetchone()["total"]
+
+                cur.execute("SELECT COUNT(*) AS total FROM unidades;")
+                stats["unidades_total"] = cur.fetchone()["total"]
+
+                cur.execute("SELECT COUNT(*) AS total FROM unidades WHERE estado = 'ocupada';")
+                stats["unidades_ocupadas"] = cur.fetchone()["total"]
+
+                cur.execute("SELECT COUNT(*) AS total FROM contratos WHERE estado = 'activo';")
+                stats["contratos_activos"] = cur.fetchone()["total"]
+
+                cur.execute("SELECT COUNT(*) AS total FROM cuotas WHERE estado = 'pendiente';")
+                stats["cuotas_pendientes"] = cur.fetchone()["total"]
+        finally:
+            conn.close()
+    except Exception:
+        pass
+    return stats
+
+
 @app.get("/")
 def home(request: Request, user: dict = Depends(get_current_user)):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "stats": _obtener_estadisticas(),
+    })

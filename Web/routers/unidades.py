@@ -35,8 +35,8 @@ FIELDS = [
             {"value": "cochera", "label": "Cochera"},
         ],
     },
-    {"name": "direccion", "label": "Dirección", "type": "text", "required": True},
-    {"name": "identificador_interno", "label": "Identificador interno", "type": "text", "required": False},
+    {"name": "direccion", "label": "Dirección", "type": "text", "required": True, "placeholder": "Ej: Av. Siempreviva 742"},
+    {"name": "identificador_interno", "label": "Identificador interno", "type": "text", "required": False, "placeholder": "Ej: U-014"},
     {
         "name": "estado", "label": "Estado", "type": "select", "required": True,
         "options": [

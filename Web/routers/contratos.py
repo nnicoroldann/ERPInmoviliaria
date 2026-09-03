@@ -65,9 +65,9 @@ def _campos(conn):
          "options": _opciones_unidades(conn)},
         {"name": "fecha_inicio", "label": "Fecha de inicio", "type": "date", "required": True},
         {"name": "fecha_fin", "label": "Fecha de fin", "type": "date", "required": True},
-        {"name": "monto_alquiler", "label": "Monto del alquiler", "type": "number", "step": "0.01", "required": True},
-        {"name": "dia_vencimiento", "label": "Día de vencimiento (1-31)", "type": "number", "required": True},
-        {"name": "deposito", "label": "Depósito", "type": "number", "step": "0.01", "required": False},
+        {"name": "monto_alquiler", "label": "Monto del alquiler", "type": "number", "step": "0.01", "required": True, "placeholder": "Ej: 150000"},
+        {"name": "dia_vencimiento", "label": "Día de vencimiento (1-31)", "type": "number", "required": True, "placeholder": "Ej: 10"},
+        {"name": "deposito", "label": "Depósito", "type": "number", "step": "0.01", "required": False, "placeholder": "Ej: 150000 (0 si no aplica)"},
         {"name": "estado", "label": "Estado", "type": "select", "required": True, "options": ESTADOS},
     ]
 

@@ -3,9 +3,13 @@
 {% block content %}
     {% set me = current_user(request) %}
     <div class="page-header">
-        <h1>Usuarios</h1>
+        <div>
+            <h1>Usuarios</h1>
+            <p style="margin:0;">{{ rows|length }} cuenta{{ 's' if rows|length != 1 else '' }} registrada{{ 's' if rows|length != 1 else '' }}</p>
+        </div>
     </div>
 
+    <div class="table-wrap">
     <table class="table">
         <thead>
             <tr>
@@ -25,7 +29,7 @@
                 <td>{{ row.nombre_usuario }}{% if row.id == me.id %} <span class="tag-yo">(vos)</span>{% endif %}</td>
                 <td>{{ row.email }}</td>
                 <td><span class="user-role role-{{ row.rol }}">{{ 'Administrador' if row.rol == 'admin' else 'Usuario' }}</span></td>
-                <td>{% if row.activo %}<span class="tag-activo">Activo</span>{% else %}<span class="tag-inactivo">Inactivo</span>{% endif %}</td>
+                <td>{% if row.activo %}<span class="badge badge-verde">Activo</span>{% else %}<span class="badge badge-rojo">Inactivo</span>{% endif %}</td>
                 <td>{{ row.creado_en.strftime('%d/%m/%Y') if row.creado_en else '' }}</td>
                 <td class="actions">
                     <form method="post" action="/usuarios/{{ row.id }}/rol" style="display:inline">
@@ -53,4 +57,5 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 {% endblock %}

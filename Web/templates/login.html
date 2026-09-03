@@ -1,31 +1,52 @@
 {% extends "base.html" %}
+{% import "_carrusel_inmobiliario.html" as carrusel %}
 {% block title %}Iniciar sesión - ERP Inmobiliarias{% endblock %}
-{% block content %}
-    <div class="auth-wrap">
-        <div class="auth-card fade-in">
-            <div class="auth-logo">
-                <img src="/static/logo.png" alt="ERP Inmobiliarias">
+{% block body %}
+    <div class="auth-shell">
+        <div class="auth-visual">
+            <span class="hero-eyebrow">ERP Inmobiliarias</span>
+            <h1>Toda tu cartera de propiedades, en un solo lugar.</h1>
+            <p>Clientes, unidades, contratos, cuotas y facturas de gas: gestioná el ciclo completo de tus alquileres de forma prolija, rápida y segura.</p>
+            <ul class="auth-features">
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Acceso por roles: administrador y usuario de solo lectura</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Contraseñas cifradas y sesiones protegidas</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Pensado para inmobiliarias reales</li>
+            </ul>
+            <div class="carrusel">
+                <div class="carrusel-pista">
+                    {{ carrusel.tarjetas_inmobiliarias() }}
+                    {{ carrusel.tarjetas_inmobiliarias() }}
+                </div>
             </div>
-            <h1>Iniciar sesión</h1>
-            <p class="auth-sub">Ingresá con tu usuario o email.</p>
+        </div>
 
-            {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
-
-            <form method="post" action="/login" class="form auth-form">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
-                <input type="hidden" name="next" value="{{ next or '/' }}">
-                <div class="form-group">
-                    <label>Usuario o email</label>
-                    <input type="text" name="identificador" autocomplete="username" required autofocus>
+        <div class="auth-form-side">
+            <div class="auth-card">
+                <div class="auth-logo">
+                    <img src="/static/logo.png" alt="ERP Inmobiliarias">
                 </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" name="password" autocomplete="current-password" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">Entrar</button>
-            </form>
+                <h1>Iniciar sesión</h1>
+                {% if error %}
+                <div id="toast-data-form" hidden data-error="{{ error }}"></div>
+                {% endif %}
+                <p class="auth-sub">Ingresá con tu usuario o email.</p>
 
-            <p class="auth-switch">¿No tenés cuenta? <a href="/registro">Registrate acá</a></p>
+                <form method="post" action="/login" class="form auth-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+                    <input type="hidden" name="next" value="{{ next or '/' }}">
+                    <div class="form-group">
+                        <label>Usuario o email</label>
+                        <input type="text" name="identificador" placeholder="Ej: jperez o jperez@inmobiliaria.com" autocomplete="username" required autofocus>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" name="password" placeholder="Tu contraseña" autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+                </form>
+
+                <p class="auth-switch">¿No tenés cuenta? <a href="/registro">Registrate acá</a></p>
+            </div>
         </div>
     </div>
 {% endblock %}
