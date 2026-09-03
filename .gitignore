@@ -7,3 +7,6 @@ venv/
 .idea/
 .vscode/
 *.log
+
+# Comprobantes que suben los inquilinos (datos privados, no van a git)
+Web/uploads_privados/

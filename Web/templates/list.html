@@ -41,6 +41,12 @@
                         <span class="badge badge-{{ colores_estado.get(valor, 'gris') }}">{{ valor }}</span>
                     {% elif col.key == 'tiene_gas' %}
                         <span class="badge {{ 'badge-verde' if valor else 'badge-gris' }}">{{ 'Sí' if valor else 'No' }}</span>
+                    {% elif col.key == 'comprobante_path' %}
+                        {% if valor %}
+                        <a href="/mis-boletas/comprobante/{{ tipo_factura }}/{{ row.id }}" target="_blank" class="btn btn-small" title="Ver comprobante">Ver</a>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
                     {% else %}
                         {{ valor if valor is not none else '—' }}
                     {% endif %}

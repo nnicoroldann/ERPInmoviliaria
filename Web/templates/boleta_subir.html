@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Subir boleta de {{ etiqueta|lower }} - ERP Inmobiliarias{% endblock %}
+{% block content %}
+    {% if error %}
+    <div id="toast-data-form" hidden data-error="{{ error }}"></div>
+    {% endif %}
+    <div class="page-header">
+        <h1>Subir boleta de {{ etiqueta|lower }}</h1>
+    </div>
+
+    <p class="lead" style="max-width:560px;">
+        Subí una foto o el PDF de tu boleta. Vamos a intentar leer el monto y el vencimiento
+        automáticamente, y en la próxima pantalla vas a poder revisarlos y corregirlos antes de
+        guardar nada.
+    </p>
+
+    <form method="post" action="/mis-boletas/leer" enctype="multipart/form-data" class="form" style="max-width:420px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+        <input type="hidden" name="tipo" value="{{ tipo }}">
+        <input type="hidden" name="contrato_id" value="{{ contrato_id }}">
+        <div class="form-group">
+            <label>Archivo (PDF, JPG o PNG, máximo 8 MB)</label>
+            <input type="file" name="archivo" accept=".pdf,.jpg,.jpeg,.png" required>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Leer boleta</button>
+            <a href="/" class="btn btn-small">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}

@@ -54,6 +54,9 @@
             <div class="stat-value">${{ '%.2f'|format(c.deuda_gas) }}</div>
             <div class="stat-label">Gas</div>
             <span class="badge {{ 'badge-rojo' if c.deuda_gas else 'badge-verde' }}">{{ 'Con deuda' if c.deuda_gas else 'Al día' }}</span>
+            <div style="margin-top:8px;">
+                <a href="/mis-boletas/nueva?tipo=gas&contrato_id={{ c.id }}" class="btn btn-small">Subir boleta de gas</a>
+            </div>
         </div>
         {% else %}
         <div class="stat-card card-anim stat-neutro">
@@ -66,6 +69,9 @@
             <div class="stat-value">${{ '%.2f'|format(c.deuda_agua) }}</div>
             <div class="stat-label">Agua</div>
             <span class="badge {{ 'badge-rojo' if c.deuda_agua else 'badge-verde' }}">{{ 'Con deuda' if c.deuda_agua else 'Al día' }}</span>
+            <div style="margin-top:8px;">
+                <a href="/mis-boletas/nueva?tipo=agua&contrato_id={{ c.id }}" class="btn btn-small">Subir boleta de agua</a>
+            </div>
         </div>
     </div>
 

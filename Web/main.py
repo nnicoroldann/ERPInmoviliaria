@@ -28,6 +28,7 @@ from database import get_connection
 from deps import NotAuthenticated, get_current_user, templates
 from routers import (
     auth,
+    boletas,
     clientes,
     contratos,
     cuotas,
@@ -91,6 +92,7 @@ app.include_router(cuotas.router)
 app.include_router(factura.router)
 app.include_router(factura_agua.router)
 app.include_router(pagos.router)
+app.include_router(boletas.router)
 
 
 @app.exception_handler(NotAuthenticated)

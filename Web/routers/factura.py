@@ -25,6 +25,7 @@ COLUMNS = [
     {"key": "monto", "label": "Monto"},
     {"key": "estado", "label": "Estado"},
     {"key": "vencimiento", "label": "Vencimiento"},
+    {"key": "comprobante_path", "label": "Comprobante"},
 ]
 
 ESTADOS = [
@@ -76,6 +77,7 @@ def listar(request: Request, user: dict = Depends(require_staff)):
         "rows": rows,
         "base_url": "/facturas-gas",
         "add_url": "/facturas-gas/nuevo",
+        "tipo_factura": "gas",
     })
 
 
