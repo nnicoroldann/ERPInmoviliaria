@@ -27,6 +27,8 @@ devuelven texto vacío en vez de romper la página: simplemente el
 inquilino va a tener que completar los campos a mano.
 """
 
+from __future__ import annotations
+
 import re
 from datetime import date, datetime
 
