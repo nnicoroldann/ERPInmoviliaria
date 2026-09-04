@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Actualizar alquiler - ERP Inmobiliarias{% endblock %}
+{% block content %}
+    <div class="page-header">
+        <h1>Actualizar alquiler — contrato #{{ contrato.id }}</h1>
+    </div>
+
+    <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom:20px;">
+        <div class="card card-anim">
+            <h2>Configuración actual</h2>
+            <p>Índice: {{ indice_txt }}</p>
+            <p>Se ajusta: {{ contrato.periodicidad_ajuste }}</p>
+            <p>Último ajuste: {{ contrato.fecha_ultimo_ajuste.strftime('%d/%m/%Y') if contrato.fecha_ultimo_ajuste else '—' }}</p>
+        </div>
+        <div class="card card-anim">
+            <h2>Alquiler actual</h2>
+            <p style="font-size:22px; font-weight:600;">${{ '%.2f'|format(contrato.monto_alquiler) }}</p>
+        </div>
+        {% if proximo is defined %}
+        <div class="card card-anim">
+            <h2>Próximo ajuste</h2>
+            <p>{{ proximo.strftime('%d/%m/%Y') }}
+                {% if vencido %}<span class="badge badge-rojo">vencido</span>{% else %}<span class="badge badge-verde">al día</span>{% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if contrato.indice_ajuste == 'ninguno' %}
+    <div class="empty">
+        <h1>Este contrato no tiene un índice de ajuste configurado</h1>
+        <p>Configuralo desde "Editar contrato" para poder calcular actualizaciones acá.</p>
+        <a href="/contratos/{{ contrato.id }}/editar" class="btn btn-primary">Editar contrato</a>
+    </div>
+    {% elif resultado is not defined %}
+    <form method="post" action="/contratos/{{ contrato.id }}/ajustar/calcular">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+        <button type="submit" class="btn btn-primary">Buscar valor actualizado ({{ indice_txt }})</button>
+    </form>
+    {% elif not resultado.ok %}
+    <div class="empty">
+        <h1>No se pudo calcular el ajuste</h1>
+        <p>{{ resultado.error }}</p>
+    </div>
+    <p style="margin-top:12px;"><a href="/contratos/{{ contrato.id }}/ajustar" class="btn btn-small">Volver a intentar</a></p>
+    {% else %}
+    <div class="card card-anim" style="max-width:620px;">
+        <h2>Nuevo alquiler propuesto</h2>
+        <p style="font-size:26px; font-weight:700; color: var(--accent);">${{ '%.2f'|format(resultado.nuevo_monto) }}</p>
+        <p style="color: var(--text-muted);">{{ resultado.detalle }}</p>
+    </div>
+    <form method="post" action="/contratos/{{ contrato.id }}/ajustar/confirmar" style="margin-top:16px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+        <input type="hidden" name="nuevo_monto" value="{{ resultado.nuevo_monto }}">
+        <input type="hidden" name="valor_indice_nuevo" value="{{ resultado.valor_indice_nuevo }}">
+        <input type="hidden" name="fecha_valor_nuevo" value="{{ resultado.fecha_valor_nuevo.isoformat() }}">
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Confirmar y guardar ${{ '%.2f'|format(resultado.nuevo_monto) }}</button>
+            <a href="/contratos" class="btn btn-small">Cancelar</a>
+        </div>
+    </form>
+    {% endif %}
+
+    <p style="margin-top:24px;"><a href="/contratos">← Volver a Contratos</a></p>
+{% endblock %}

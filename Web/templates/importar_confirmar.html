@@ -28,11 +28,11 @@
         </div>
         <div class="stat-card card-anim stat-neutro">
             <div class="stat-value">{{ resumen.unidades_nuevas_estimadas }}</div>
-            <div class="stat-label">Unidades nuevas</div>
+            <div class="stat-label">Propiedades nuevas</div>
         </div>
         <div class="stat-card card-anim stat-neutro">
             <div class="stat-value">{{ resumen.unidades_a_revisar_estimadas }}</div>
-            <div class="stat-label">Unidades ya cargadas (se completan)</div>
+            <div class="stat-label">Propiedades ya cargadas (se completan)</div>
         </div>
         <div class="stat-card card-anim stat-neutro">
             <div class="stat-value">{{ resumen.cuotas_a_cargar_estimadas }}</div>
@@ -57,7 +57,7 @@
     <p style="color: var(--text-muted); margin-top:-8px; max-width:640px;">
         Nada de esto bloquea la importación: son cosas que el Excel no tenía o no se pudieron
         emparejar con certeza. Te conviene revisarlas después desde Clientes, Propietarios,
-        Unidades o Facturas de gas.
+        Propiedades o Facturas de gas.
     </p>
     <ul style="max-width:780px; line-height:1.7;">
         {% for aviso in avisos[:40] %}

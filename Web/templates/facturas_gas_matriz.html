@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Gas - ERP Inmobiliarias{% endblock %}
+{% block content %}
+    {% set user = current_user(request) %}
+    <div class="page-header">
+        <div>
+            <h1>Gas</h1>
+            <p style="margin:0;">{{ filas|length }} propiedad{{ 'es' if filas|length != 1 else '' }} con gas</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+            {% if user.rol == 'admin' %}
+            <a href="/facturas-gas/detalle" class="btn btn-small">Cargar factura en detalle</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <p class="help" style="margin:-8px 0 16px;">
+        Igual que en la planilla: por cada propiedad se ve el inquilino, el dueño y el número de
+        cuenta de gas, con un mes por columna. Marcá cada mes como Pagado o Pendiente y apretá
+        "Guardar" en esa fila — se puede cargar en cualquier orden, por ejemplo pagar julio y a la
+        vez completar febrero, que había quedado atrasado.
+    </p>
+
+    <form method="get" action="/facturas-gas" style="margin-bottom:16px; display:flex; gap:8px; align-items:center;">
+        <label for="anio-select" style="font-size:13px; color:var(--text-muted);">Año:</label>
+        <select name="anio" id="anio-select" onchange="this.form.submit()" class="anio-select">
+            {% for a in anios %}
+            <option value="{{ a }}" {{ 'selected' if a == anio_actual else '' }}>{{ a }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if filas %}
+    <div class="table-wrap matrix-wrap">
+    <table class="table matrix-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Inquilino</th>
+                <th>Propietario</th>
+                <th>N° cuenta gas</th>
+                <th>Estado</th>
+                {% for m in filas[0].meses %}
+                <th>{{ m.nombre }}</th>
+                {% endfor %}
+                {% if user.rol == 'admin' %}<th></th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in filas %}
+            <tr>
+                <td>{{ fila.cliente_id or '—' }}</td>
+                <td>
+                    {% if fila.cliente_id %}
+                        {{ fila.cliente_apellido }} {{ fila.cliente_nombre }}
+                    {% else %}
+                        <span class="text-muted">— Sin inquilino —</span>
+                    {% endif %}
+                    <br><span class="text-muted" style="font-size:12px;">{{ fila.tipo }} — {{ fila.direccion }}</span>
+                </td>
+                <td>
+                    {% if fila.propietario_apellido %}
+                        {{ fila.propietario_apellido }} {{ fila.propietario_nombre }}
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td>{{ fila.gas_cuenta or '—' }}</td>
+                <td>
+                    {% if fila.meses_deuda %}
+                    <span class="badge badge-rojo">Debe {{ fila.meses_deuda }} mes{{ 'es' if fila.meses_deuda != 1 else '' }}</span>
+                    {% else %}
+                    <span class="badge badge-verde">Al día</span>
+                    {% endif %}
+                </td>
+                {% for m in fila.meses %}
+                <td>
+                    {% if user.rol == 'admin' %}
+                    <select name="mes_{{ '%02d'|format(m.num) }}" form="fgas-{{ fila.unidad_id }}" class="mes-select mes-{{ m.estado if m.estado else 'vacio' }}">
+                        <option value="" {{ 'selected' if not m.estado else '' }}>—</option>
+                        <option value="pagado" {{ 'selected' if m.estado == 'pagado' else '' }}>Pagado</option>
+                        <option value="pendiente" {{ 'selected' if m.estado in ('pendiente', 'vencido') else '' }}>Pendiente</option>
+                    </select>
+                    {% else %}
+                        {% if m.estado == 'pagado' %}
+                        <span class="badge badge-verde">Pagado</span>
+                        {% elif m.estado in ('pendiente', 'vencido') %}
+                        <span class="badge badge-rojo">Pendiente</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    {% endif %}
+                </td>
+                {% endfor %}
+                {% if user.rol == 'admin' %}
+                <td class="actions">
+                    <button type="submit" form="fgas-{{ fila.unidad_id }}" class="btn btn-small btn-primary">Guardar</button>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    {% if user.rol == 'admin' %}
+    {% for fila in filas %}
+    <form id="fgas-{{ fila.unidad_id }}" method="post" action="/facturas-gas/{{ fila.unidad_id }}/guardar-meses" style="display:none;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+        <input type="hidden" name="anio" value="{{ anio_actual }}">
+    </form>
+    {% endfor %}
+    {% endif %}
+    {% else %}
+    <div class="empty">
+        <h1>No hay propiedades con gas cargado</h1>
+        <p>Activá "¿Tiene gas?" en una propiedad para que aparezca acá.</p>
+        <a href="/unidades" class="btn btn-primary">Ver propiedades</a>
+    </div>
+    {% endif %}
+{% endblock %}

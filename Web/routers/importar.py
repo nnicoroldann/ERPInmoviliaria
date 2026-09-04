@@ -129,7 +129,7 @@ def confirmar(
 
     mensaje = (
         f"Importación completa: {resultado['clientes_creados']} clientes, "
-        f"{resultado['propietarios_creados']} propietarios, {resultado['unidades_creadas']} unidades, "
+        f"{resultado['propietarios_creados']} propietarios, {resultado['unidades_creadas']} propiedades, "
         f"{resultado['contratos_creados']} contratos, {resultado['cuotas_creadas']} cuotas y "
         f"{resultado['facturas_gas_creadas']} facturas de gas nuevas "
         f"({resultado['telefonos_actualizados']} teléfonos completados)."

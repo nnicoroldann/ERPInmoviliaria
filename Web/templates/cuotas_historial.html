@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Historial de cuotas - ERP Inmobiliarias{% endblock %}
+{% block content %}
+    {% set colores_estado = {
+        'pagado': 'verde', 'pendiente': 'ambar', 'parcial': 'azul', 'vencido': 'rojo',
+    } %}
+    <div class="page-header">
+        <div>
+            <h1>Historial — contrato #{{ contrato.id }}</h1>
+            <p style="margin:0;">
+                {{ contrato.cliente_apellido }} {{ contrato.cliente_nombre }} — {{ contrato.tipo }} en {{ contrato.direccion }}
+                <span class="badge badge-{{ 'verde' if contrato.contrato_estado == 'activo' else 'gris' }}" style="margin-left:6px;">{{ contrato.contrato_estado }}</span>
+            </p>
+        </div>
+        <a href="/cuotas" class="btn btn-small">← Volver a la grilla</a>
+    </div>
+
+    <p class="help" style="margin:-8px 0 20px;">
+        Todas las cuotas cargadas para este contrato, de cualquier año — incluidas las que ya
+        "pasaron de año" y no se ven en la grilla principal.
+    </p>
+
+    {% if cuotas %}
+    <div class="table-wrap">
+    <table class="table">
+        <thead>
+            <tr><th>Mes</th><th>Monto</th><th>Estado</th><th>Fecha de pago</th><th>Comprobante</th></tr>
+        </thead>
+        <tbody>
+            {% for c in cuotas %}
+            <tr>
+                <td>{{ c.mes }}</td>
+                <td>${{ '%.2f'|format(c.monto) }}</td>
+                <td><span class="badge badge-{{ colores_estado.get(c.estado, 'gris') }}">{{ c.estado }}</span></td>
+                <td>{{ c.fecha_pago.strftime('%d/%m/%Y') if c.fecha_pago else '—' }}</td>
+                <td>{{ c.comprobante or '—' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="empty">
+        <h1>Todavía no hay cuotas cargadas para este contrato</h1>
+        <p>Cargalas desde la grilla de <a href="/cuotas">Cuotas</a>.</p>
+    </div>
+    {% endif %}
+{% endblock %}

@@ -15,9 +15,24 @@
 
     <p class="help" style="margin:-8px 0 20px;">
         Cada cuenta queda vinculada a un cliente ya cargado: al iniciar sesión, ese inquilino ve
-        únicamente su propia unidad y su estado de cuenta. Las contraseñas se guardan cifradas y no
-        se pueden recuperar; si un inquilino la olvida, restablecela desde acá.
+        únicamente su propia propiedad y su estado de cuenta. Al crear un contrato se genera sola la
+        cuenta del cliente (usuario <code>nombre_id</code>, contraseña <code>usuario1234</code>).
+        Las contraseñas se guardan cifradas y no se pueden recuperar; si un inquilino la olvida,
+        restablecela desde acá.
     </p>
+
+    {% if candidatos_faltantes %}
+    <div class="card card-anim" style="margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div>
+            <strong>{{ candidatos_faltantes }}</strong> cliente{{ 's' if candidatos_faltantes != 1 else '' }} con contrato todavía
+            no tiene cuenta de portal (por ejemplo, los cargados por importación).
+        </div>
+        <form method="post" action="/usuarios/inquilinos/generar-faltantes">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+            <button type="submit" class="btn btn-primary btn-small">Generar cuentas faltantes</button>
+        </form>
+    </div>
+    {% endif %}
 
     {% if rows %}
     <div class="table-wrap">
@@ -28,7 +43,7 @@
                 <th>Usuario</th>
                 <th>Cliente</th>
                 <th>Email</th>
-                <th>Unidad(es)</th>
+                <th>Propiedad(es)</th>
                 <th>Estado</th>
                 <th>Alta</th>
                 <th class="actions">Acciones</th>
@@ -50,7 +65,7 @@
                         </div>
                         {% endfor %}
                     {% else %}
-                        <span class="text-muted">— Sin unidad asignada —</span>
+                        <span class="text-muted">— Sin propiedad asignada —</span>
                     {% endif %}
                 </td>
                 <td>{% if row.activo %}<span class="badge badge-verde">Activo</span>{% else %}<span class="badge badge-rojo">Inactivo</span>{% endif %}</td>

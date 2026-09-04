@@ -1,9 +1,10 @@
 """
 routers/unidades.py
 
-CRUD completo de la tabla unidades. El campo propietario_id se
-muestra como select, cargado dinámicamente desde la tabla
-propietarios (puede quedar sin asignar).
+CRUD completo de la tabla unidades (mostradas en la web como
+"Propiedades": son las propiedades registradas, cada una con su
+propietario). El campo propietario_id se muestra como select, cargado
+dinámicamente desde la tabla propietarios (puede quedar sin asignar).
 
 Permisos:
 - Ver el listado: cualquier usuario con sesión iniciada.
@@ -83,7 +84,7 @@ def listar(request: Request, user: dict = Depends(require_staff)):
         conn.close()
     return templates.TemplateResponse("list.html", {
         "request": request,
-        "title": "Unidades",
+        "title": "Propiedades",
         "columns": COLUMNS,
         "rows": rows,
         "base_url": "/unidades",
@@ -100,7 +101,7 @@ def form_nuevo(request: Request, user: dict = Depends(require_admin)):
         conn.close()
     return templates.TemplateResponse("form.html", {
         "request": request,
-        "title": "Nueva unidad",
+        "title": "Nueva propiedad",
         "fields": fields,
         "values": {},
         "back_url": "/unidades",
@@ -133,10 +134,10 @@ def crear(
         conn.commit()
     except psycopg2.errors.UniqueViolation:
         conn.rollback()
-        return RedirectResponse("/unidades/nuevo?error=Ya existe una unidad con ese identificador", status_code=303)
+        return RedirectResponse("/unidades/nuevo?error=Ya existe una propiedad con ese identificador", status_code=303)
     finally:
         conn.close()
-    return RedirectResponse("/unidades?ok=Unidad creada con éxito", status_code=303)
+    return RedirectResponse("/unidades?ok=Propiedad creada con éxito", status_code=303)
 
 
 @router.get("/{unidad_id}/editar")
@@ -151,7 +152,7 @@ def form_editar(request: Request, unidad_id: int, user: dict = Depends(require_a
         conn.close()
     return templates.TemplateResponse("form.html", {
         "request": request,
-        "title": f"Editar unidad #{unidad_id}",
+        "title": f"Editar propiedad #{unidad_id}",
         "fields": fields,
         "values": unidad or {},
         "back_url": "/unidades",
@@ -186,10 +187,10 @@ def editar(
         conn.commit()
     except psycopg2.errors.UniqueViolation:
         conn.rollback()
-        return RedirectResponse(f"/unidades/{unidad_id}/editar?error=Ya existe otra unidad con ese identificador", status_code=303)
+        return RedirectResponse(f"/unidades/{unidad_id}/editar?error=Ya existe otra propiedad con ese identificador", status_code=303)
     finally:
         conn.close()
-    return RedirectResponse("/unidades?ok=Unidad actualizada", status_code=303)
+    return RedirectResponse("/unidades?ok=Propiedad actualizada", status_code=303)
 
 
 @router.post("/{unidad_id}/eliminar")
@@ -204,4 +205,4 @@ def eliminar(unidad_id: int, user: dict = Depends(require_admin), _csrf: bool = 
         return RedirectResponse("/unidades?error=No se puede eliminar: tiene contratos o facturas asociadas", status_code=303)
     finally:
         conn.close()
-    return RedirectResponse("/unidades?ok=Unidad eliminada", status_code=303)
+    return RedirectResponse("/unidades?ok=Propiedad eliminada", status_code=303)

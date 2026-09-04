@@ -166,7 +166,7 @@ def eliminar(propietario_id: int, user: dict = Depends(require_admin), _csrf: bo
         conn.commit()
     except psycopg2.errors.ForeignKeyViolation:
         conn.rollback()
-        return RedirectResponse("/propietarios?error=No se puede eliminar: tiene unidades asignadas", status_code=303)
+        return RedirectResponse("/propietarios?error=No se puede eliminar: tiene propiedades asignadas", status_code=303)
     finally:
         conn.close()
     return RedirectResponse("/propietarios?ok=Propietario eliminado", status_code=303)

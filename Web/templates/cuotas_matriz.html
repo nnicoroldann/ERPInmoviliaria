@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Cuotas - ERP Inmobiliarias{% endblock %}
+{% block content %}
+    {% set user = current_user(request) %}
+    <div class="page-header">
+        <div>
+            <h1>Cuotas</h1>
+            <p style="margin:0;">{{ filas|length }} contrato{{ 's' if filas|length != 1 else '' }}</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+            {% if user.rol == 'admin' %}
+            <a href="/cuotas/detalle" class="btn btn-small">Cargar cuota en detalle</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <p class="help" style="margin:-8px 0 16px;">
+        Igual que en la planilla: por cada contrato se ve el inquilino, la propiedad y el alquiler,
+        con un mes por columna. Marcá cada mes como Pagado, Pendiente o Parcial y apretá "Guardar"
+        en esa fila — se puede cargar en cualquier orden, por ejemplo pagar noviembre y diciembre y
+        volver a enero del año que viene; lo que quedó en años anteriores se puede ver siempre desde
+        "Historial".
+    </p>
+
+    <form method="get" action="/cuotas" style="margin-bottom:16px; display:flex; gap:8px; align-items:center;">
+        <label for="anio-select" style="font-size:13px; color:var(--text-muted);">Año:</label>
+        <select name="anio" id="anio-select" onchange="this.form.submit()" class="anio-select">
+            {% for a in anios %}
+            <option value="{{ a }}" {{ 'selected' if a == anio_actual else '' }}>{{ a }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if filas %}
+    <div class="table-wrap matrix-wrap">
+    <table class="table matrix-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Inquilino</th>
+                <th>Propiedad</th>
+                <th>Alquiler</th>
+                <th>Estado</th>
+                {% for m in filas[0].meses %}
+                <th>{{ m.nombre }}</th>
+                {% endfor %}
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in filas %}
+            <tr>
+                <td>{{ fila.cliente_id }}</td>
+                <td>
+                    {{ fila.cliente_apellido }} {{ fila.cliente_nombre }}
+                    <br><span class="badge badge-{{ 'verde' if fila.contrato_estado == 'activo' else 'gris' }}" style="margin-top:2px;">{{ fila.contrato_estado }}</span>
+                </td>
+                <td>{{ fila.tipo }} — {{ fila.direccion }}</td>
+                <td>${{ '%.2f'|format(fila.monto_alquiler) }}</td>
+                <td>
+                    {% if fila.cuotas_deuda %}
+                    <span class="badge badge-rojo">Debe {{ fila.cuotas_deuda }} cuota{{ 's' if fila.cuotas_deuda != 1 else '' }}</span>
+                    {% else %}
+                    <span class="badge badge-verde">Al día</span>
+                    {% endif %}
+                </td>
+                {% for m in fila.meses %}
+                <td>
+                    {% if user.rol == 'admin' %}
+                    <select name="mes_{{ '%02d'|format(m.num) }}" form="fcuo-{{ fila.contrato_id }}" class="mes-select mes-{{ m.estado if m.estado else 'vacio' }}">
+                        <option value="" {{ 'selected' if not m.estado else '' }}>—</option>
+                        <option value="pagado" {{ 'selected' if m.estado == 'pagado' else '' }}>Pagado</option>
+                        <option value="pendiente" {{ 'selected' if m.estado in ('pendiente', 'vencido') else '' }}>Pendiente</option>
+                        <option value="parcial" {{ 'selected' if m.estado == 'parcial' else '' }}>Parcial</option>
+                    </select>
+                    {% else %}
+                        {% if m.estado == 'pagado' %}
+                        <span class="badge badge-verde">Pagado</span>
+                        {% elif m.estado == 'parcial' %}
+                        <span class="badge badge-azul">Parcial</span>
+                        {% elif m.estado in ('pendiente', 'vencido') %}
+                        <span class="badge badge-rojo">Pendiente</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    {% endif %}
+                </td>
+                {% endfor %}
+                <td class="actions">
+                    {% if user.rol == 'admin' %}
+                    <button type="submit" form="fcuo-{{ fila.contrato_id }}" class="btn btn-small btn-primary">Guardar</button>
+                    {% endif %}
+                    <a href="/cuotas/{{ fila.contrato_id }}/historial" class="btn btn-small" title="Ver historial completo">Historial</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    {% if user.rol == 'admin' %}
+    {% for fila in filas %}
+    <form id="fcuo-{{ fila.contrato_id }}" method="post" action="/cuotas/{{ fila.contrato_id }}/guardar-meses" style="display:none;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+        <input type="hidden" name="anio" value="{{ anio_actual }}">
+    </form>
+    {% endfor %}
+    {% endif %}
+    {% else %}
+    <div class="empty">
+        <h1>Todavía no hay contratos cargados</h1>
+        <p>Cargá un contrato para poder llevar sus cuotas acá.</p>
+        <a href="/contratos" class="btn btn-primary">Ver contratos</a>
+    </div>
+    {% endif %}
+{% endblock %}

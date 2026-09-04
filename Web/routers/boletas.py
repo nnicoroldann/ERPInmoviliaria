@@ -75,7 +75,7 @@ def form_nueva(request: Request, tipo: str, contrato_id: int, user: dict = Depen
     if not contrato:
         return RedirectResponse("/?error=Ese contrato no pertenece a tu cuenta", status_code=303)
     if tipo == "gas" and not contrato["tiene_gas"]:
-        return RedirectResponse("/?error=Esa unidad no tiene gas", status_code=303)
+        return RedirectResponse("/?error=Esa propiedad no tiene gas", status_code=303)
 
     return templates.TemplateResponse("boleta_subir.html", {
         "request": request,

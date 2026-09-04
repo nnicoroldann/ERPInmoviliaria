@@ -992,3 +992,67 @@ footer.site-footer {
 .detalle-cuenta { margin: 4px 0 32px; }
 .detalle-cuenta summary { list-style: none; cursor: pointer; width: fit-content; }
 .detalle-cuenta summary::-webkit-details-marker { display: none; }
+
+/* Caja de búsqueda genérica (listados: clientes, etc.) */
+.search-box {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+.search-box input[type="text"] {
+    flex: 1 1 280px;
+    min-width: 220px;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    background: var(--surface-strong);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.search-box input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.75; }
+.search-box input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79, 159, 224, 0.22);
+    background: var(--surface-solid);
+}
+.search-box .search-hint {
+    flex-basis: 100%;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* Grillas estilo Excel (gas, alquileres): mismo look de .table-wrap
+   pero con scroll horizontal siempre habilitado, porque tienen muchas
+   columnas (una por mes). */
+.matrix-wrap { overflow-x: auto; }
+.matrix-table th, .matrix-table td { white-space: nowrap; }
+.matrix-table td:nth-child(2) { white-space: normal; min-width: 160px; }
+
+.anio-select {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    background: var(--surface-strong);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.mes-select {
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: inherit;
+    background: var(--surface-strong);
+    color: var(--text);
+}
+.mes-select.mes-pagado { border-color: var(--success); color: var(--success); }
+.mes-select.mes-pendiente,
+.mes-select.mes-vencido { border-color: var(--danger); color: var(--danger); }
+.mes-select.mes-vacio { color: var(--text-muted); }

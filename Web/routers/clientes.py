@@ -3,6 +3,11 @@ routers/clientes.py
 
 CRUD completo (Crear, Listar, Editar, Eliminar) de la tabla clientes.
 
+El listado tiene una búsqueda por texto libre (parámetro ?q=) que
+busca a la vez en id, nombre, apellido, DNI/CUIT, email, id de
+contrato y mes de cuota, para poder encontrar un cliente por
+cualquiera de esos datos sin tener que saber en cuál está.
+
 Permisos:
 - Ver el listado: cualquier usuario con sesión iniciada.
 - Crear / editar / eliminar: solo rol admin (y con token CSRF válido).
@@ -43,13 +48,47 @@ FIELDS = [
 ]
 
 
-@router.get("")
-def listar(request: Request, user: dict = Depends(require_staff)):
-    conn = get_connection()
-    try:
+def _buscar_clientes(conn, q: str):
+    """
+    Trae los clientes que matchean el texto buscado en cualquiera de:
+    id, nombre, apellido (juntos o separados), DNI/CUIT, email, id de
+    contrato o mes de una cuota (formato 'YYYY-MM').
+    """
+    q = (q or "").strip()
+    if not q:
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM clientes ORDER BY id;")
-            rows = cur.fetchall()
+            return cur.fetchall()
+
+    comodin = f"%{q}%"
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT DISTINCT c.*
+            FROM clientes c
+            LEFT JOIN contratos co ON co.cliente_id = c.id
+            LEFT JOIN cuotas cu ON cu.contrato_id = co.id
+            WHERE c.id::text ILIKE %(q)s
+               OR c.nombre ILIKE %(q)s
+               OR c.apellido ILIKE %(q)s
+               OR (c.nombre || ' ' || c.apellido) ILIKE %(q)s
+               OR (c.apellido || ' ' || c.nombre) ILIKE %(q)s
+               OR c.dni_cuit ILIKE %(q)s
+               OR c.email ILIKE %(q)s
+               OR co.id::text ILIKE %(q)s
+               OR cu.mes ILIKE %(q)s
+            ORDER BY c.id;
+            """,
+            {"q": comodin},
+        )
+        return cur.fetchall()
+
+
+@router.get("")
+def listar(request: Request, q: str = "", user: dict = Depends(require_staff)):
+    conn = get_connection()
+    try:
+        rows = _buscar_clientes(conn, q)
     finally:
         conn.close()
     return templates.TemplateResponse("list.html", {
@@ -59,6 +98,9 @@ def listar(request: Request, user: dict = Depends(require_staff)):
         "rows": rows,
         "base_url": "/clientes",
         "add_url": "/clientes/nuevo",
+        "search_url": "/clientes",
+        "search_q": q,
+        "search_placeholder": "Buscar por nombre, apellido, ID, DNI/CUIT, email, N° de contrato o mes de cuota (AAAA-MM)...",
     })
 
 

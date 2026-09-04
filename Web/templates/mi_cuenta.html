@@ -15,20 +15,20 @@
         <h1>Hola, {{ user.nombre_usuario }} 👋</h1>
         <p class="lead">
             Acá encontrás tu propiedad alquilada y el estado de tu cuenta: si estás al día con el
-            alquiler, el gas y el agua, o si tenés algún pago pendiente. Podés pagar directamente
-            desde acá con Mercado Pago, o comunicarte con la inmobiliaria ante cualquier duda.
+            alquiler y el gas, o si tenés algún pago pendiente. Podés pagar directamente desde acá
+            con Mercado Pago, o comunicarte con la inmobiliaria ante cualquier duda.
         </p>
     </section>
 
     {% if not datos.contratos %}
     <div class="empty">
-        <h1>Todavía no tenés una unidad asignada</h1>
+        <h1>Todavía no tenés una propiedad asignada</h1>
         <p>Comunicate con la inmobiliaria para que te asignen tu contrato y puedas ver acá el estado de tu cuenta.</p>
     </div>
     {% endif %}
 
     {% for c in datos.contratos %}
-    {% set deuda_total = c.deuda_alquiler + (c.deuda_gas if c.tiene_gas else 0) + c.deuda_agua %}
+    {% set deuda_total = c.deuda_alquiler + (c.deuda_gas if c.tiene_gas else 0) %}
     <p class="section-title">
         {{ c.tipo }} — {{ c.direccion }}{% if c.identificador_interno %} ({{ c.identificador_interno }}){% endif %}
         <span class="badge badge-{{ colores_estado.get(c.estado, 'gris') }}" style="margin-left:8px;">{{ c.estado }}</span>
@@ -65,14 +65,6 @@
             <span class="badge badge-gris">No aplica</span>
         </div>
         {% endif %}
-        <div class="stat-card card-anim {{ 'stat-deuda' if c.deuda_agua else 'stat-ok' }}">
-            <div class="stat-value">${{ '%.2f'|format(c.deuda_agua) }}</div>
-            <div class="stat-label">Agua</div>
-            <span class="badge {{ 'badge-rojo' if c.deuda_agua else 'badge-verde' }}">{{ 'Con deuda' if c.deuda_agua else 'Al día' }}</span>
-            <div style="margin-top:8px;">
-                <a href="/mis-boletas/nueva?tipo=agua&contrato_id={{ c.id }}" class="btn btn-small">Subir boleta de agua</a>
-            </div>
-        </div>
     </div>
 
     {% if deuda_total %}
@@ -142,35 +134,8 @@
         </div>
         {% endif %}
 
-        {% if c.facturas_agua %}
-        <p class="text-muted" style="margin:16px 0 6px;">Facturas de agua</p>
-        <div class="table-wrap">
-        <table class="table">
-            <thead><tr><th>Período</th><th>Monto</th><th>Estado</th><th>Vencimiento</th><th></th></tr></thead>
-            <tbody>
-                {% for f in c.facturas_agua %}
-                <tr>
-                    <td>{{ f.periodo }}</td>
-                    <td>${{ '%.2f'|format(f.monto) }}</td>
-                    <td><span class="badge badge-{{ colores_estado.get(f.estado, 'gris') }}">{{ f.estado }}</span></td>
-                    <td>{{ f.vencimiento.strftime('%d/%m/%Y') if f.vencimiento else '—' }}</td>
-                    <td>
-                        {% if f.estado in estados_pagables_factura %}
-                        <form method="post" action="/pagos/factura-agua/{{ f.id }}" style="display:inline">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
-                            <button type="submit" class="btn btn-small btn-primary">Pagar</button>
-                        </form>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        </div>
-        {% endif %}
-
-        {% if not c.cuotas and not c.facturas_gas and not c.facturas_agua %}
-        <p class="text-muted" style="margin-top:16px;">Todavía no hay pagos cargados para esta unidad.</p>
+        {% if not c.cuotas and not c.facturas_gas %}
+        <p class="text-muted" style="margin-top:16px;">Todavía no hay pagos cargados para esta propiedad.</p>
         {% endif %}
     </details>
     {% endfor %}

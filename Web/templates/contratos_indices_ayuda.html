@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Índices de ajuste - ERP Inmobiliarias{% endblock %}
+{% block content %}
+    <div class="page-header">
+        <h1>Índices de ajuste de alquiler</h1>
+    </div>
+
+    <p class="lead" style="max-width:700px;">
+        Desde el DNU 70/2023 y la Ley 27.737 (vigente para los contratos firmados a partir del
+        18/10/2023), en Argentina ya no existe un índice obligatorio para actualizar el alquiler:
+        se elige libremente entre las partes, siempre que quede escrito en el contrato. La
+        frecuencia mínima habitual que se usa en la práctica es cada 6 meses (también se ven
+        contratos trimestrales o anuales). Los contratos firmados antes de esa fecha pueden seguir
+        rigiéndose por lo que decían originalmente (muchos usaban el ICL de la vieja Ley 27.551).
+    </p>
+    <p style="max-width:700px; color: var(--text-muted);">
+        Esto es información general, no asesoramiento legal ni contable: para un contrato puntual,
+        sobre todo si hay dudas de qué índice conviene o si un contrato viejo sigue una regla
+        distinta, conviene consultar a un abogado o contador.
+    </p>
+
+    <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top:20px;">
+        <div class="card card-anim">
+            <h2>ICL (BCRA)</h2>
+            <p>
+                El <strong>Índice para Contratos de Locación</strong> lo publica todos los días el
+                Banco Central. Se creó junto con la Ley 27.551 (2020) combinando la evolución de
+                los salarios y de la inflación, buscando un punto medio entre las dos. Aunque ya no
+                es obligatorio, el BCRA lo sigue publicando y muchos contratos lo siguen usando por
+                acuerdo entre las partes porque no depende de que ninguna de las dos partes cargue
+                un dato: sale solo, todos los días.
+            </p>
+            <p style="margin-top:8px;"><strong>Esta web lo trae automático</strong> desde la API pública del BCRA.</p>
+        </div>
+        <div class="card card-anim">
+            <h2>IPC (INDEC)</h2>
+            <p>
+                El <strong>Índice de Precios al Consumidor</strong> mide la inflación (cuánto
+                subieron los precios) a nivel nacional, y lo publica el INDEC una vez por mes. Es
+                el más directo para que el alquiler no pierda contra la inflación, pero en períodos
+                de salarios que no le siguen el ritmo a los precios puede subir más rápido de lo
+                que el inquilino puede pagar.
+            </p>
+            <p style="margin-top:8px;"><strong>Esta web lo trae automático</strong> (variación mensual, INDEC) y acumula los meses que pasaron desde el último ajuste.</p>
+        </div>
+        <div class="card card-anim">
+            <h2>RIPTE</h2>
+            <p>
+                La <strong>Remuneración Imponible Promedio de los Trabajadores Estables</strong> es
+                un promedio de sueldos, publicado por el Ministerio de Trabajo. A diferencia del
+                IPC, sigue a los salarios y no a los precios — se usa cuando se prefiere que el
+                alquiler evolucione al ritmo de lo que gana la gente en vez del costo de vida. Es
+                el menos común de los tres hoy en día.
+            </p>
+            <p style="margin-top:8px; color: var(--text-muted);">
+                No encontramos una fuente pública con una API estable para traerlo automático, así
+                que los contratos que usan RIPTE se actualizan a mano (cargando el nuevo alquiler
+                desde "Editar contrato" cuando salga el valor oficial).
+            </p>
+        </div>
+    </div>
+
+    <p class="section-title" style="margin-top:28px;">Cómo se calcula acá</p>
+    <p style="max-width:700px;">
+        Cada contrato guarda un "punto de partida": el alquiler y el valor del índice el día del
+        último ajuste. Al pedir "Actualizar alquiler", se trae el valor vigente del índice y se
+        calcula: <code>alquiler nuevo = alquiler del punto de partida × (valor del índice hoy ÷
+        valor del índice en el punto de partida)</code>. Para IPC, en vez de un valor de índice se
+        usa el acumulado de las variaciones mensuales publicadas desde esa fecha. En los dos casos,
+        el cálculo se muestra antes de guardar nada — nunca se actualiza el alquiler solo.
+    </p>
+{% endblock %}

@@ -8,6 +8,12 @@ un cliente ya cargado en el sistema. La cuenta queda vinculada a ese
 cliente vía usuarios.cliente_id, y al iniciar sesión el inquilino ve
 únicamente su propia unidad y estado de cuenta (ver main.py / mi_cuenta.html).
 
+Además del alta manual, cuando se crea un contrato se genera sola una
+cuenta con usuario "nombre_id" y contraseña "usuario1234" (ver
+cuentas_inquilino.py). El botón "Generar cuentas faltantes" de esta
+pantalla corre lo mismo para los clientes que ya tenían contrato antes
+de que existiera esa generación automática.
+
 Por seguridad las contraseñas se guardan con hash bcrypt y son
 irrecuperables: no existe (ni puede existir) una función para "ver" la
 contraseña de un inquilino. Lo que el admin puede hacer es restablecerla
@@ -20,6 +26,7 @@ import psycopg2
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 
+from cuentas_inquilino import generar_cuentas_faltantes
 from database import get_connection
 from deps import require_admin, templates, verify_csrf
 from security import hash_password
@@ -82,6 +89,21 @@ def _unidades_de_cliente(conn, cliente_id):
         return cur.fetchall()
 
 
+def _cantidad_candidatos_faltantes(conn):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT COUNT(DISTINCT c.id) AS cantidad
+            FROM clientes c
+            JOIN contratos co ON co.cliente_id = c.id
+            WHERE c.id NOT IN (
+                SELECT cliente_id FROM usuarios WHERE cliente_id IS NOT NULL
+            );
+            """
+        )
+        return cur.fetchone()["cantidad"]
+
+
 @router.get("")
 def listar(request: Request, user: dict = Depends(require_admin)):
     conn = get_connection()
@@ -101,12 +123,34 @@ def listar(request: Request, user: dict = Depends(require_admin)):
             rows = cur.fetchall()
         for row in rows:
             row["unidades"] = _unidades_de_cliente(conn, row["cliente_id"])
+        candidatos_faltantes = _cantidad_candidatos_faltantes(conn)
     finally:
         conn.close()
     return templates.TemplateResponse("inquilinos_list.html", {
         "request": request,
         "rows": rows,
+        "candidatos_faltantes": candidatos_faltantes,
     })
+
+
+@router.post("/generar-faltantes")
+def generar_faltantes(request: Request, user: dict = Depends(require_admin), _csrf: bool = Depends(verify_csrf)):
+    conn = get_connection()
+    try:
+        resultado = generar_cuentas_faltantes(conn)
+    finally:
+        conn.close()
+    if resultado["creadas"]:
+        msg = (
+            f"Se generaron {resultado['creadas']} cuenta(s) nueva(s) "
+            f"(usuario nombre_id, contraseña usuario1234)."
+        )
+        if resultado["fallidas"]:
+            msg += f" {resultado['fallidas']} no se pudieron generar."
+        return RedirectResponse(f"/usuarios/inquilinos?ok={msg}", status_code=303)
+    return RedirectResponse(
+        "/usuarios/inquilinos?ok=No había cuentas faltantes por generar", status_code=303
+    )
 
 
 @router.get("/nuevo")

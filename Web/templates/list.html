@@ -12,15 +12,34 @@
     <div class="page-header">
         <div>
             <h1>{{ title }}</h1>
-            <p style="margin:0;">{{ rows|length }} registro{{ 's' if rows|length != 1 else '' }} en total</p>
+            <p style="margin:0;">{{ rows|length }} registro{{ 's' if rows|length != 1 else '' }}{{ ' encontrado' + ('s' if rows|length != 1 else '') if search_q else ' en total' }}</p>
         </div>
-        {% if user.rol == 'admin' %}
-        <a href="{{ add_url }}" class="btn btn-primary">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            Nuevo
-        </a>
-        {% endif %}
+        <div style="display:flex; gap:8px; align-items:center;">
+            {% if title == 'Contratos' %}
+            <a href="/contratos/indices-ayuda" class="btn btn-small">¿Qué es cada índice?</a>
+            {% endif %}
+            {% if title == 'Facturas de gas' %}
+            <a href="/facturas-gas" class="btn btn-small">← Ver como grilla</a>
+            {% endif %}
+            {% if title == 'Cuotas' %}
+            <a href="/cuotas" class="btn btn-small">← Ver como grilla</a>
+            {% endif %}
+            {% if user.rol == 'admin' %}
+            <a href="{{ add_url }}" class="btn btn-primary">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Nuevo
+            </a>
+            {% endif %}
+        </div>
     </div>
+
+    {% if search_url is defined %}
+    <form method="get" action="{{ search_url }}" class="search-box">
+        <input type="text" name="q" value="{{ search_q or '' }}" placeholder="{{ search_placeholder or 'Buscar...' }}">
+        <button type="submit" class="btn btn-primary btn-small">Buscar</button>
+        {% if search_q %}<a href="{{ search_url }}" class="btn btn-small">Limpiar</a>{% endif %}
+    </form>
+    {% endif %}
 
     {% if rows %}
     <div class="table-wrap">
@@ -47,6 +66,12 @@
                         {% else %}
                         <span class="text-muted">—</span>
                         {% endif %}
+                    {% elif col.key == 'ajustar_link' %}
+                        {% if valor %}
+                        <a href="/contratos/{{ row.id }}/ajustar" class="btn btn-small">Actualizar alquiler</a>
+                        {% endif %}
+                    {% elif col.key == 'proximo_ajuste_txt' and valor and 'vencido' in valor %}
+                        <span class="badge badge-rojo">{{ valor }}</span>
                     {% else %}
                         {{ valor if valor is not none else '—' }}
                     {% endif %}
@@ -70,6 +95,12 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
+    {% elif search_q %}
+    <div class="empty">
+        <h1>No se encontró nada para "{{ search_q }}"</h1>
+        <p>Probá con otro dato de búsqueda.</p>
+        <a href="{{ search_url }}" class="btn btn-primary">Ver todos</a>
     </div>
     {% else %}
     <div class="empty">

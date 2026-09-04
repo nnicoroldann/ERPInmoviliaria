@@ -260,14 +260,6 @@ def pagar_todo(
                 items.append({"tipo": "gas", "referencia_id": f["id"], "contrato_id": contrato_id,
                               "titulo": f"Gas {f['periodo']}", "monto": f["monto"]})
 
-            cur.execute(
-                "SELECT * FROM facturas_agua WHERE unidad_id = %s AND estado = ANY(%s);",
-                (contrato["unidad_id"], list(ESTADOS_PAGABLES_FACTURA)),
-            )
-            for f in cur.fetchall():
-                items.append({"tipo": "agua", "referencia_id": f["id"], "contrato_id": contrato_id,
-                              "titulo": f"Agua {f['periodo']}", "monto": f["monto"]})
-
         if not items:
             return RedirectResponse("/?ok=No tenés nada pendiente para pagar", status_code=303)
 
