@@ -611,8 +611,21 @@ footer.site-footer {
     border-radius: var(--radius-md);
     border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
-    overflow: hidden;
+    overflow: auto;
+    max-height: 68vh;
     animation: fadeInUp 0.4s ease both;
+}
+
+/* Encabezado pegajoso: al scrollear una tabla larga (para abajo o para
+   el costado), los títulos de columna quedan siempre visibles arriba,
+   y el scroll horizontal queda a mano sin tener que bajar del todo. */
+.table-wrap thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-image: linear-gradient(var(--surface-strong), var(--surface-strong));
+    background-color: var(--surface-solid);
+    background-clip: padding-box;
 }
 
 .table {
@@ -927,7 +940,6 @@ footer.site-footer {
     .user-info { display: none; }
     .container { margin: 24px auto 40px; }
     .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
-    .table-wrap { overflow-x: auto; }
     .auth-card { padding: 28px 22px; }
     #toast-container { top: auto; bottom: 14px; right: 14px; left: 14px; max-width: none; }
 }
@@ -1029,7 +1041,7 @@ footer.site-footer {
 /* Grillas estilo Excel (gas, alquileres): mismo look de .table-wrap
    pero con scroll horizontal siempre habilitado, porque tienen muchas
    columnas (una por mes). */
-.matrix-wrap { overflow-x: auto; }
+.matrix-wrap { overflow: auto; max-height: 72vh; }
 .matrix-table th, .matrix-table td { white-space: nowrap; }
 .matrix-table td:nth-child(2) { white-space: normal; min-width: 160px; }
 

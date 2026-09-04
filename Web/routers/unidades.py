@@ -6,6 +6,10 @@ CRUD completo de la tabla unidades (mostradas en la web como
 propietario). El campo propietario_id se muestra como select, cargado
 dinámicamente desde la tabla propietarios (puede quedar sin asignar).
 
+El listado tiene una búsqueda por texto libre (parámetro ?q=) que
+busca a la vez en id, tipo, dirección, identificador interno, N° de
+cuenta de gas y nombre/apellido del propietario.
+
 Permisos:
 - Ver el listado: cualquier usuario con sesión iniciada.
 - Crear / editar / eliminar: solo rol admin (y con token CSRF válido).
@@ -65,21 +69,42 @@ def _campos(conn):
     ]
 
 
+def _buscar_unidades(conn, q: str):
+    q = (q or "").strip()
+    base_select = """
+        SELECT u.*,
+               CASE WHEN p.id IS NULL THEN NULL ELSE p.apellido || ' ' || p.nombre END AS propietario
+        FROM unidades u
+        LEFT JOIN propietarios p ON p.id = u.propietario_id
+    """
+    with conn.cursor() as cur:
+        if not q:
+            cur.execute(base_select + " ORDER BY u.id;")
+            return cur.fetchall()
+
+        comodin = f"%{q}%"
+        cur.execute(
+            base_select + """
+            WHERE u.id::text ILIKE %(q)s
+               OR u.tipo ILIKE %(q)s
+               OR u.direccion ILIKE %(q)s
+               OR u.identificador_interno ILIKE %(q)s
+               OR u.gas_cuenta ILIKE %(q)s
+               OR p.nombre ILIKE %(q)s
+               OR p.apellido ILIKE %(q)s
+               OR (p.apellido || ' ' || p.nombre) ILIKE %(q)s
+            ORDER BY u.id;
+            """,
+            {"q": comodin},
+        )
+        return cur.fetchall()
+
+
 @router.get("")
-def listar(request: Request, user: dict = Depends(require_staff)):
+def listar(request: Request, q: str = "", user: dict = Depends(require_staff)):
     conn = get_connection()
     try:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT u.*,
-                       CASE WHEN p.id IS NULL THEN NULL ELSE p.apellido || ' ' || p.nombre END AS propietario
-                FROM unidades u
-                LEFT JOIN propietarios p ON p.id = u.propietario_id
-                ORDER BY u.id;
-                """
-            )
-            rows = cur.fetchall()
+        rows = _buscar_unidades(conn, q)
     finally:
         conn.close()
     return templates.TemplateResponse("list.html", {
@@ -89,6 +114,9 @@ def listar(request: Request, user: dict = Depends(require_staff)):
         "rows": rows,
         "base_url": "/unidades",
         "add_url": "/unidades/nuevo",
+        "search_url": "/unidades",
+        "search_q": q,
+        "search_placeholder": "Buscar por ID, tipo, dirección, identificador, N° de cuenta de gas o propietario...",
     })
 
 

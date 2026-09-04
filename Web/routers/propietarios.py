@@ -1,7 +1,9 @@
 """
 routers/propietarios.py
 
-CRUD completo de la tabla propietarios (dueños de las unidades).
+CRUD completo de la tabla propietarios (dueños de las propiedades). El
+listado tiene una búsqueda por texto libre (parámetro ?q=) que busca a
+la vez en id, nombre, apellido, DNI/CUIT, email, teléfono y CBU/alias.
 
 Permisos:
 - Ver el listado: cualquier usuario con sesión iniciada.
@@ -45,13 +47,39 @@ FIELDS = [
 ]
 
 
-@router.get("")
-def listar(request: Request, user: dict = Depends(require_staff)):
-    conn = get_connection()
-    try:
+def _buscar_propietarios(conn, q: str):
+    q = (q or "").strip()
+    if not q:
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM propietarios ORDER BY apellido, nombre;")
-            rows = cur.fetchall()
+            return cur.fetchall()
+
+    comodin = f"%{q}%"
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT * FROM propietarios
+            WHERE id::text ILIKE %(q)s
+               OR nombre ILIKE %(q)s
+               OR apellido ILIKE %(q)s
+               OR (nombre || ' ' || apellido) ILIKE %(q)s
+               OR (apellido || ' ' || nombre) ILIKE %(q)s
+               OR dni_cuit ILIKE %(q)s
+               OR email ILIKE %(q)s
+               OR telefono ILIKE %(q)s
+               OR cbu_alias ILIKE %(q)s
+            ORDER BY apellido, nombre;
+            """,
+            {"q": comodin},
+        )
+        return cur.fetchall()
+
+
+@router.get("")
+def listar(request: Request, q: str = "", user: dict = Depends(require_staff)):
+    conn = get_connection()
+    try:
+        rows = _buscar_propietarios(conn, q)
     finally:
         conn.close()
     return templates.TemplateResponse("list.html", {
@@ -61,6 +89,9 @@ def listar(request: Request, user: dict = Depends(require_staff)):
         "rows": rows,
         "base_url": "/propietarios",
         "add_url": "/propietarios/nuevo",
+        "search_url": "/propietarios",
+        "search_q": q,
+        "search_placeholder": "Buscar por nombre, apellido, ID, DNI/CUIT, email, teléfono o CBU/alias...",
     })
 
 

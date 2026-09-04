@@ -5,6 +5,10 @@ CRUD completo de la tabla contratos. Los campos cliente_id y
 unidad_id se muestran como selects, cargados dinámicamente desde
 las tablas clientes y unidades.
 
+El listado tiene una búsqueda por texto libre (parámetro ?q=) que
+busca a la vez en id de contrato, nombre/apellido/DNI del cliente,
+dirección/identificador de la propiedad y estado.
+
 Además del CRUD, cada contrato puede tener configurado un índice de
 ajuste (ICL / IPC / RIPTE) y cada cuánto se actualiza. La pantalla
 "Actualizar alquiler" (/contratos/{id}/ajustar) trae el valor vigente
@@ -109,13 +113,42 @@ def _obtener_contrato(conn, contrato_id):
         return cur.fetchone()
 
 
+def _buscar_contratos(conn, q: str):
+    q = (q or "").strip()
+    with conn.cursor() as cur:
+        if not q:
+            cur.execute("SELECT * FROM contratos ORDER BY id;")
+            return cur.fetchall()
+
+        comodin = f"%{q}%"
+        cur.execute(
+            """
+            SELECT DISTINCT co.*
+            FROM contratos co
+            JOIN clientes cl ON cl.id = co.cliente_id
+            JOIN unidades un ON un.id = co.unidad_id
+            WHERE co.id::text ILIKE %(q)s
+               OR cl.id::text ILIKE %(q)s
+               OR cl.nombre ILIKE %(q)s
+               OR cl.apellido ILIKE %(q)s
+               OR (cl.nombre || ' ' || cl.apellido) ILIKE %(q)s
+               OR (cl.apellido || ' ' || cl.nombre) ILIKE %(q)s
+               OR cl.dni_cuit ILIKE %(q)s
+               OR un.direccion ILIKE %(q)s
+               OR un.identificador_interno ILIKE %(q)s
+               OR co.estado ILIKE %(q)s
+            ORDER BY co.id;
+            """,
+            {"q": comodin},
+        )
+        return cur.fetchall()
+
+
 @router.get("")
-def listar(request: Request, user: dict = Depends(require_staff)):
+def listar(request: Request, q: str = "", user: dict = Depends(require_staff)):
     conn = get_connection()
     try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT * FROM contratos ORDER BY id;")
-            rows = cur.fetchall()
+        rows = _buscar_contratos(conn, q)
     finally:
         conn.close()
 
@@ -138,6 +171,9 @@ def listar(request: Request, user: dict = Depends(require_staff)):
         "rows": rows,
         "base_url": "/contratos",
         "add_url": "/contratos/nuevo",
+        "search_url": "/contratos",
+        "search_q": q,
+        "search_placeholder": "Buscar por N° de contrato, cliente, DNI, dirección/identificador o estado...",
     })
 
 
