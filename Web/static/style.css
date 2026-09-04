@@ -638,6 +638,7 @@ footer.site-footer {
     text-align: left;
     border-bottom: 1px solid var(--border);
     font-size: 14px;
+    vertical-align: middle;
 }
 
 .table th {
@@ -654,7 +655,15 @@ footer.site-footer {
 .table tbody tr:hover { background: var(--surface-strong); }
 .table tbody tr:last-child td { border-bottom: none; }
 
-.actions { white-space: nowrap; display: flex; gap: 6px; }
+.actions {
+    white-space: nowrap;
+}
+.actions > * {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+.actions > *:last-child { margin-right: 0; }
 
 .badge {
     display: inline-flex;
