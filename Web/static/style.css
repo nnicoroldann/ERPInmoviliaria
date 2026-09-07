@@ -1,27 +1,43 @@
 /* ============================================================
    ERP Inmobiliarias — hoja de estilos
-   Índice:
-   1.  Fuentes y reset
-   2.  Tokens de tema (oscuro / claro) + fondo animado
-   3.  Navbar
-   4.  Layout / contenedor
-   5.  Toasts (notificaciones)
+
+   Cómo está organizado este archivo (por si hay que tocar algo):
+
+   1.  Fuentes y reset simple
+   2.  Tokens de tema (variables --algo, oscuro / claro) + fondo animado
+   3.  Navbar (marca, links, link activo "iluminado", usuario, tema)
+   4.  Layout general del contenedor de página
+   5.  Toasts (los avisos verdes/rojos que aparecen arriba a la derecha)
    6.  Botones
-   7.  Tarjetas del dashboard + hero + stats
-   8.  Tabla + badges de estado
-   9.  Formularios
-   10. Autenticación (login / registro) + carrusel inmobiliario
-   11. Panel de usuarios / páginas de error
-   12. Responsive
+   7.  Dashboard: hero + tarjetas de stats + tarjetas de accesos
+   8.  Tablas: filas, acciones, badges de estado, buscador de listados
+       y las grillas estilo Excel (Gas / Cuotas)
+   9.  Formularios (inputs, selects, checkboxes)
+   10. Autenticación (login / registro) + carrusel de propiedades
+   11. Panel de usuarios: etiquetas de estado + reset de contraseña
+   12. Portal del inquilino: tarjetas de estado de cuenta
+   13. Responsive (celulares / pantallas chicas)
+
+   Todo lo que es color, tipografía o "look" general vive en las
+   variables de la sección 2 (--accent, --gold, --surface, etc.) — para
+   cambiar la paleta de toda la app alcanza con tocar esas variables,
+   no hace falta ir rule por rule.
    ============================================================ */
 
-/* ---------- 1. Fuentes y reset ---------- */
+/* ============================================================
+   1. FUENTES Y RESET
+   ============================================================ */
+
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
+/* box-sizing: border-box en todo, así padding/border no rompen los
+   anchos calculados (evita el clásico "se desborda por 2px"). */
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body { height: 100%; }
 
+/* Scroll suave para los anchors (ej: "volver arriba"). Se desactiva
+   más abajo si el usuario tiene activado "reducir movimiento". */
 html { scroll-behavior: smooth; }
 
 body {
@@ -42,8 +58,13 @@ h1, h2, h3 {
 a { color: inherit; }
 button { font-family: inherit; }
 
-/* ---------- 2. Tokens de tema + fondo animado ---------- */
+/* ============================================================
+   2. TOKENS DE TEMA (oscuro / claro) + fondo animado
+   ============================================================ */
 
+/* Paleta modo noche (por defecto). Todo el resto del CSS usa estas
+   variables en vez de colores sueltos, así el toggle de tema
+   (botón del sol/luna) cambia toda la app de una sola vez. */
 :root {
     --bg: #04070d;
     --bg-2: #070f1e;
@@ -70,6 +91,8 @@ button { font-family: inherit; }
     --stars-opacity: 1;
 }
 
+/* Paleta modo día: pisa las mismas variables cuando <html> tiene
+   data-theme="light" (lo pone app.js al togglear el tema). */
 :root[data-theme="light"] {
     --bg: #eef4fc;
     --bg-2: #f8fbff;
@@ -93,6 +116,8 @@ button { font-family: inherit; }
     --stars-opacity: 0;
 }
 
+/* Fondo con degradados suaves + el canvas de estrellas (#estrellas,
+   animado desde app.js) detrás de todo el contenido. */
 body {
     min-height: 100vh;
     background-color: var(--bg);
@@ -122,6 +147,7 @@ body {
     transition: opacity 0.6s ease;
 }
 
+/* El fondo (#estrellas) queda en z-index 0; todo lo demás por encima. */
 .navbar, .container, footer.site-footer { position: relative; z-index: 1; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -129,7 +155,9 @@ body {
     #estrellas { display: none; }
 }
 
-/* ---------- 3. Navbar ---------- */
+/* ============================================================
+   3. NAVBAR
+   ============================================================ */
 
 .navbar {
     display: flex;
@@ -147,6 +175,20 @@ body {
     z-index: 30;
 }
 
+/* Línea degradada bien fina debajo de toda la barra, para darle un
+   toque más "premium" sin competir con el brillo del link activo. */
+.navbar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--gold), transparent);
+    opacity: 0.45;
+    pointer-events: none;
+}
+
 .navbar .brand {
     display: flex;
     align-items: center;
@@ -156,7 +198,10 @@ body {
     font-weight: 700;
     font-size: 18px;
     color: var(--text);
+    transition: color 0.2s ease;
 }
+
+.navbar .brand:hover { color: var(--accent); }
 
 .brand .logo-mark {
     width: 36px;
@@ -186,42 +231,82 @@ body {
     flex-wrap: wrap;
 }
 
+/* Cada link del menú. Usa ::before como "halo" de fondo que entra
+   con una animación al pasar el mouse (en vez de simplemente
+   pintar un background en :hover), y position:relative porque el
+   halo y la barrita del link activo (::after) se posicionan
+   respecto al link. */
 .nav-links a {
     position: relative;
+    z-index: 0;
     color: var(--text-muted);
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    padding: 8px 14px;
-    border-radius: 8px;
-    transition: color 0.15s ease, background 0.15s ease;
+    padding: 9px 16px;
+    border-radius: 999px;
+    transition: color 0.25s ease, transform 0.2s ease;
 }
 
-.nav-links a:hover { color: var(--text); background: var(--surface-strong); }
-
-.nav-links a.active {
-    color: var(--text);
+.nav-links a:not(.nav-cta)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
     background: var(--surface-strong);
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.nav-links a:not(.nav-cta):hover {
+    color: var(--text);
+    transform: translateY(-1px);
+}
+.nav-links a:not(.nav-cta):hover::before { opacity: 1; transform: scale(1); }
+
+/* Link de la sección en la que estás parado: se calcula en el
+   servidor (base.html compara request.url.path contra cada href),
+   no con JS, así se ve bien desde el primer render sin parpadeo.
+   Queda "iluminado": fondo en degradado suave del acento+dorado,
+   texto en color de acento, un resplandor (glow) alrededor y la
+   barrita inferior más marcada. */
+.nav-links a.active {
+    color: var(--accent);
+    font-weight: 700;
+    background: linear-gradient(135deg, rgba(79, 159, 224, 0.20), rgba(224, 180, 92, 0.16));
+    box-shadow: 0 0 0 1px rgba(79, 159, 224, 0.28) inset, 0 4px 18px rgba(79, 159, 224, 0.28);
+    animation: navActiveIn 0.35s ease both;
 }
 
 .nav-links a.active::after {
     content: "";
     position: absolute;
-    left: 14px;
-    right: 14px;
-    bottom: 3px;
+    left: 16px;
+    right: 16px;
+    bottom: 4px;
     height: 2px;
     border-radius: 2px;
     background: linear-gradient(90deg, var(--accent), var(--gold));
+    box-shadow: 0 0 8px rgba(224, 180, 92, 0.6);
 }
 
+@keyframes navActiveIn {
+    from { opacity: 0; transform: translateY(-2px) scale(0.94); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Botón "Crear cuenta" del navbar (usuario sin sesión): tiene su
+   propio fondo sólido, por eso queda afuera del halo de :hover de
+   arriba (se le suma un pequeño levantamiento en vez del halo). */
 .nav-links a.nav-cta {
     background: linear-gradient(135deg, var(--gold), var(--gold-strong));
     color: #2a1a02;
     font-weight: 700;
 }
 
-.nav-links a.nav-cta:hover { filter: brightness(1.08); }
+.nav-links a.nav-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
 .nav-user { display: flex; align-items: center; gap: 12px; }
 
@@ -262,6 +347,8 @@ body {
 .user-info { display: flex; flex-direction: column; line-height: 1.2; }
 .user-name { color: var(--text); font-size: 13px; font-weight: 600; }
 
+/* Pastillita de rol: se usa acá en el navbar (al lado del nombre) y
+   también en las tablas de /usuarios y /usuarios/inquilinos. */
 .user-role {
     font-size: 11px;
     font-weight: 600;
@@ -271,13 +358,16 @@ body {
     width: fit-content;
 }
 
-.user-role.role-admin { background: rgba(224, 180, 92, 0.22); color: var(--gold); }
-.user-role.role-usuario { background: rgba(79, 159, 224, 0.22); color: var(--accent); }
+.user-role.role-admin     { background: rgba(224, 180, 92, 0.22); color: var(--gold); }
+.user-role.role-usuario   { background: rgba(79, 159, 224, 0.22); color: var(--accent); }
+.user-role.role-inquilino { background: var(--success-bg); color: var(--success); }
 
 .logout-form { margin: 0; }
 .logout-form .btn { margin: 0; }
 
-/* ---------- 4. Layout / contenedor ---------- */
+/* ============================================================
+   4. LAYOUT / CONTENEDOR
+   ============================================================ */
 
 .container {
     max-width: 1080px;
@@ -316,7 +406,9 @@ footer.site-footer {
     font-size: 12px;
 }
 
-/* ---------- 5. Toasts (notificaciones) ---------- */
+/* ============================================================
+   5. TOASTS (notificaciones)
+   ============================================================ */
 
 #toast-container {
     position: fixed;
@@ -377,7 +469,9 @@ footer.site-footer {
 }
 .toast-close:hover { color: var(--text); }
 
-/* ---------- 6. Botones ---------- */
+/* ============================================================
+   6. BOTONES
+   ============================================================ */
 
 .btn {
     position: relative;
@@ -398,6 +492,8 @@ footer.site-footer {
 
 .btn:active { transform: translateY(1px) scale(0.98); }
 
+/* Círculo que se expande al hacer click (lo crea app.js en cada
+   .btn, con initRipple()). */
 .btn-ripple {
     position: absolute;
     border-radius: 50%;
@@ -448,7 +544,9 @@ footer.site-footer {
 .btn-block { width: 100%; }
 .btn-icon { width: 16px; height: 16px; flex-shrink: 0; }
 
-/* ---------- 7. Dashboard: hero + stats + tarjetas ---------- */
+/* ============================================================
+   7. DASHBOARD: hero + stats + tarjetas
+   ============================================================ */
 
 .hero {
     display: flex;
@@ -582,6 +680,8 @@ footer.site-footer {
 }
 .card-icon svg { width: 20px; height: 20px; }
 
+/* Las tarjetas del dashboard entran en cascada (cada una un toque
+   más tarde que la anterior) en vez de todas juntas. */
 .card-anim { animation: fadeInUp 0.45s ease both; }
 .cards .card-anim:nth-child(1) { animation-delay: 0.02s; }
 .cards .card-anim:nth-child(2) { animation-delay: 0.07s; }
@@ -599,10 +699,12 @@ footer.site-footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .fade-in, .card-anim, .hero, .stat-card { animation: none; }
+    .fade-in, .card-anim, .hero, .stat-card, .nav-links a.active { animation: none; }
 }
 
-/* ---------- 8. Tabla + badges de estado ---------- */
+/* ============================================================
+   8. TABLAS: filas, acciones, badges, buscador y grillas Excel
+   ============================================================ */
 
 .table-wrap {
     background: var(--surface);
@@ -655,6 +757,12 @@ footer.site-footer {
 .table tbody tr:hover { background: var(--surface-strong); }
 .table tbody tr:last-child td { border-bottom: none; }
 
+/* Columna de acciones (editar/eliminar, guardar, historial, etc.).
+   OJO: no ponerle display:flex a esta clase — al ir directo en un
+   <td>, hace que el navegador deje de tratarlo como celda de tabla
+   y el contenido queda pegado arriba en vez de centrado con el
+   resto de la fila (ya pasó una vez). Por eso los botones se separan
+   con margin en vez de gap/flex. */
 .actions {
     white-space: nowrap;
 }
@@ -682,6 +790,10 @@ footer.site-footer {
 .badge-azul   { background: rgba(79, 159, 224, 0.18); color: var(--accent); }
 .badge-gris   { background: var(--surface-strong); color: var(--text-muted); }
 
+/* Texto grisado genérico (placeholders tipo "— Sin asignar —" en
+   tablas y grillas). */
+.text-muted { color: var(--text-muted); font-size: 12px; }
+
 .empty {
     background: var(--surface);
     backdrop-filter: blur(10px);
@@ -695,7 +807,74 @@ footer.site-footer {
 .empty h1 { margin-bottom: 8px; }
 .empty .btn { margin-top: 14px; }
 
-/* ---------- 9. Formularios ---------- */
+/* --- Buscador de listados (Clientes, Propietarios, Propiedades,
+   Contratos): input de texto libre arriba de la tabla. --- */
+.search-box {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+.search-box input[type="text"] {
+    flex: 1 1 280px;
+    min-width: 220px;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    background: var(--surface-strong);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.search-box input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.75; }
+.search-box input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79, 159, 224, 0.22);
+    background: var(--surface-solid);
+}
+.search-box .search-hint {
+    flex-basis: 100%;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* --- Grillas estilo Excel (Gas, Cuotas): mismo look de .table-wrap
+   pero con scroll siempre habilitado, porque tienen muchas columnas
+   (una por mes) y pueden tener muchas filas. --- */
+.matrix-wrap { overflow: auto; max-height: 72vh; }
+.matrix-table th, .matrix-table td { white-space: nowrap; }
+.matrix-table td:nth-child(2) { white-space: normal; min-width: 160px; }
+
+.anio-select {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    background: var(--surface-strong);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.mes-select {
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: inherit;
+    background: var(--surface-strong);
+    color: var(--text);
+}
+.mes-select.mes-pagado { border-color: var(--success); color: var(--success); }
+.mes-select.mes-pendiente,
+.mes-select.mes-vencido { border-color: var(--danger); color: var(--danger); }
+.mes-select.mes-vacio { color: var(--text-muted); }
+
+/* ============================================================
+   9. FORMULARIOS
+   ============================================================ */
 
 .form {
     background: var(--surface);
@@ -761,7 +940,9 @@ footer.site-footer {
 
 .form .form-actions { margin-top: 6px; display: flex; gap: 8px; }
 
-/* ---------- 10. Autenticación (login / registro) ---------- */
+/* ============================================================
+   10. AUTENTICACIÓN (login / registro) + carrusel de propiedades
+   ============================================================ */
 
 .auth-shell {
     min-height: calc(100vh - 66px);
@@ -881,7 +1062,7 @@ footer.site-footer {
     .carrusel-pista { animation: none; }
 }
 
-/* --- panel del formulario --- */
+/* --- panel del formulario de login/registro --- */
 
 .auth-form-side {
     display: flex;
@@ -922,43 +1103,16 @@ footer.site-footer {
 .auth-switch a { color: var(--accent); font-weight: 600; text-decoration: none; }
 .auth-switch a:hover { text-decoration: underline; }
 
-/* ---------- 11. Panel de usuarios / páginas de error ---------- */
+/* ============================================================
+   11. PANEL DE USUARIOS: etiquetas de estado + reset de contraseña
+   ============================================================ */
 
 .tag-yo { color: var(--text-muted); font-size: 12px; }
 .tag-activo { color: var(--success); font-weight: 600; font-size: 13px; }
 .tag-inactivo { color: var(--danger); font-weight: 600; font-size: 13px; }
 
-.error-page {
-    text-align: center;
-    padding: 70px 30px;
-}
-.error-page .error-emoji { font-size: 44px; display: block; margin-bottom: 10px; }
-
-/* ---------- 12. Responsive ---------- */
-
-@media (max-width: 900px) {
-    .auth-shell { grid-template-columns: 1fr; }
-    .auth-visual { padding: 44px 32px; min-height: 320px; }
-}
-
-@media (max-width: 640px) {
-    .navbar { padding: 12px 16px; }
-    .nav-links { gap: 0; }
-    .nav-links a { padding: 8px 10px; font-size: 13px; }
-    .nav-user { gap: 8px; }
-    .user-info { display: none; }
-    .container { margin: 24px auto 40px; }
-    .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
-    .auth-card { padding: 28px 22px; }
-    #toast-container { top: auto; bottom: 14px; right: 14px; left: 14px; max-width: none; }
-}
-
-/* ---------- Portal del inquilino: cuentas + reset de contraseña ---------- */
-
-.user-role.role-inquilino { background: var(--success-bg); color: var(--success); }
-
-.text-muted { color: var(--text-muted); font-size: 12px; }
-
+/* Botón "restablecer contraseña" de /usuarios/inquilinos: es un
+   <details> que despliega un mini formulario flotante. */
 .reset-pass { display: inline-block; position: relative; }
 .reset-pass summary { list-style: none; cursor: pointer; }
 .reset-pass summary::-webkit-details-marker { display: none; }
@@ -992,7 +1146,15 @@ footer.site-footer {
     box-sizing: border-box;
 }
 
-/* ---------- Portal del inquilino: tarjetas de estado de cuenta ---------- */
+.error-page {
+    text-align: center;
+    padding: 70px 30px;
+}
+.error-page .error-emoji { font-size: 44px; display: block; margin-bottom: 10px; }
+
+/* ============================================================
+   12. PORTAL DEL INQUILINO: tarjetas de estado de cuenta
+   ============================================================ */
 
 .stat-card.stat-ok { border-color: rgba(52, 211, 153, 0.4); }
 .stat-card.stat-deuda { border-color: rgba(248, 113, 113, 0.5); }
@@ -1014,66 +1176,23 @@ footer.site-footer {
 .detalle-cuenta summary { list-style: none; cursor: pointer; width: fit-content; }
 .detalle-cuenta summary::-webkit-details-marker { display: none; }
 
-/* Caja de búsqueda genérica (listados: clientes, etc.) */
-.search-box {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 18px;
-}
-.search-box input[type="text"] {
-    flex: 1 1 280px;
-    min-width: 220px;
-    padding: 11px 13px;
-    border: 1px solid var(--border);
-    background: var(--surface-strong);
-    color: var(--text);
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    font-family: inherit;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-}
-.search-box input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.75; }
-.search-box input[type="text"]:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(79, 159, 224, 0.22);
-    background: var(--surface-solid);
-}
-.search-box .search-hint {
-    flex-basis: 100%;
-    color: var(--text-muted);
-    font-size: 12px;
+/* ============================================================
+   13. RESPONSIVE (celulares / pantallas chicas)
+   ============================================================ */
+
+@media (max-width: 900px) {
+    .auth-shell { grid-template-columns: 1fr; }
+    .auth-visual { padding: 44px 32px; min-height: 320px; }
 }
 
-/* Grillas estilo Excel (gas, alquileres): mismo look de .table-wrap
-   pero con scroll horizontal siempre habilitado, porque tienen muchas
-   columnas (una por mes). */
-.matrix-wrap { overflow: auto; max-height: 72vh; }
-.matrix-table th, .matrix-table td { white-space: nowrap; }
-.matrix-table td:nth-child(2) { white-space: normal; min-width: 160px; }
-
-.anio-select {
-    padding: 9px 12px;
-    border: 1px solid var(--border);
-    background: var(--surface-strong);
-    color: var(--text);
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    font-family: inherit;
+@media (max-width: 640px) {
+    .navbar { padding: 12px 16px; }
+    .nav-links { gap: 0; }
+    .nav-links a { padding: 8px 10px; font-size: 13px; }
+    .nav-user { gap: 8px; }
+    .user-info { display: none; }
+    .container { margin: 24px auto 40px; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .auth-card { padding: 28px 22px; }
+    #toast-container { top: auto; bottom: 14px; right: 14px; left: 14px; max-width: none; }
 }
-
-.mes-select {
-    padding: 6px 8px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-family: inherit;
-    background: var(--surface-strong);
-    color: var(--text);
-}
-.mes-select.mes-pagado { border-color: var(--success); color: var(--success); }
-.mes-select.mes-pendiente,
-.mes-select.mes-vencido { border-color: var(--danger); color: var(--danger); }
-.mes-select.mes-vacio { color: var(--text-muted); }

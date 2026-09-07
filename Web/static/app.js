@@ -212,17 +212,9 @@
         });
     }
 
-    /* ---------------- Resaltar link activo del navbar ---------------- */
-
-    function marcarActivo() {
-        var ruta = window.location.pathname;
-        document.querySelectorAll(".nav-links a[href]").forEach(function (a) {
-            var href = a.getAttribute("href");
-            if (href !== "/" && href.length > 1 && ruta.indexOf(href) === 0) {
-                a.classList.add("active");
-            }
-        });
-    }
+    // Nota: el link activo del navbar (el que queda "iluminado") se
+    // marca desde el servidor, en templates/base.html, comparando la
+    // URL pedida contra cada href — no hace falta hacerlo acá con JS.
 
     // Expuesto para páginas que necesitan mostrar un toast fuera del
     // flujo normal de query params (por ej. errores de login/registro
@@ -234,6 +226,5 @@
         initEstrellas();
         initToasts();
         initRipple();
-        marcarActivo();
     });
 })();

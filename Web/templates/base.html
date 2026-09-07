@@ -44,20 +44,28 @@
         </a>
 
         {% if user %}
+        {# Se marca como "active" (queda iluminado) el link de la sección
+           en la que se está parado, comparando la URL pedida contra cada
+           href. Se calcula acá en el server (no con JS) para que se vea
+           bien desde el primer render, sin parpadeo.
+           Ojo con /usuarios vs /usuarios/inquilinos: como uno es prefijo
+           del otro, a Usuarios hay que excluirle explícitamente las
+           rutas de Inquilinos para que no se iluminen los dos a la vez. #}
+        {% set path = request.url.path %}
         <div class="nav-links">
             {% if user.rol in ('admin', 'usuario') %}
-            <a href="/clientes">Clientes</a>
-            <a href="/propietarios">Propietarios</a>
-            <a href="/unidades">Propiedades</a>
-            <a href="/contratos">Contratos</a>
-            <a href="/cuotas">Cuotas</a>
-            <a href="/facturas-gas">Gas</a>
-            <a href="/pagos">Pagos</a>
+            <a href="/clientes" class="{{ 'active' if path.startswith('/clientes') else '' }}">Clientes</a>
+            <a href="/propietarios" class="{{ 'active' if path.startswith('/propietarios') else '' }}">Propietarios</a>
+            <a href="/unidades" class="{{ 'active' if path.startswith('/unidades') else '' }}">Propiedades</a>
+            <a href="/contratos" class="{{ 'active' if path.startswith('/contratos') else '' }}">Contratos</a>
+            <a href="/cuotas" class="{{ 'active' if path.startswith('/cuotas') else '' }}">Cuotas</a>
+            <a href="/facturas-gas" class="{{ 'active' if path.startswith('/facturas-gas') else '' }}">Gas</a>
+            <a href="/pagos" class="{{ 'active' if path.startswith('/pagos') else '' }}">Pagos</a>
             {% endif %}
             {% if user.rol == 'admin' %}
-            <a href="/usuarios">Usuarios</a>
-            <a href="/usuarios/inquilinos">Inquilinos</a>
-            <a href="/importar">Importar Excel</a>
+            <a href="/usuarios" class="{{ 'active' if path.startswith('/usuarios') and not path.startswith('/usuarios/inquilinos') else '' }}">Usuarios</a>
+            <a href="/usuarios/inquilinos" class="{{ 'active' if path.startswith('/usuarios/inquilinos') else '' }}">Inquilinos</a>
+            <a href="/importar" class="{{ 'active' if path.startswith('/importar') else '' }}">Importar Excel</a>
             {% endif %}
         </div>
 
