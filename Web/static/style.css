@@ -64,7 +64,16 @@ button { font-family: inherit; }
 
 /* Paleta modo noche (por defecto). Todo el resto del CSS usa estas
    variables en vez de colores sueltos, así el toggle de tema
-   (botón del sol/luna) cambia toda la app de una sola vez. */
+   (botón del sol/luna) cambia toda la app de una sola vez.
+
+   Las variables "--algo-rgb" (ej: --accent-rgb: 79, 159, 224) son el
+   mismo color que --algo pero como "R, G, B" sueltos, para poder
+   usarlos en un rgba(...) con transparencia propia, tipo
+   rgba(var(--accent-rgb), 0.25) — así una sombra, un brillo o el
+   fondo de un badge también seguían el color si el día de mañana se
+   quiere cambiar el celeste (--accent) o el dorado (--gold) de toda
+   la app: alcanza con cambiar el color acá arriba, no hay que salir
+   a buscar cada sombra sueltas por el archivo. */
 :root {
     --bg: #04070d;
     --bg-2: #070f1e;
@@ -75,13 +84,17 @@ button { font-family: inherit; }
     --text-muted: rgba(238, 244, 255, 0.64);
     --border: rgba(255, 255, 255, 0.10);
     --accent: #4f9fe0;
+    --accent-rgb: 79, 159, 224;
     --accent-strong: #2f7fd0;
     --accent-2: #1f5aa8;
     --gold: #e0b45c;
+    --gold-rgb: 224, 180, 92;
     --gold-strong: #c98f2e;
     --success: #34d399;
+    --success-rgb: 52, 211, 153;
     --success-bg: rgba(52, 211, 153, 0.14);
     --danger: #f87171;
+    --danger-rgb: 248, 113, 113;
     --danger-bg: rgba(248, 113, 113, 0.16);
     --shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
     --shadow-sm: 0 10px 24px rgba(0, 0, 0, 0.4);
@@ -103,13 +116,17 @@ button { font-family: inherit; }
     --text-muted: #57647c;
     --border: rgba(14, 27, 50, 0.10);
     --accent: #1f5aa8;
+    --accent-rgb: 31, 90, 168;
     --accent-strong: #14407e;
     --accent-2: #0e2a54;
     --gold: #b9791f;
+    --gold-rgb: 185, 121, 31;
     --gold-strong: #8f5b12;
     --success: #16a34a;
+    --success-rgb: 22, 163, 74;
     --success-bg: rgba(22, 163, 74, 0.10);
     --danger: #dc2626;
+    --danger-rgb: 220, 38, 38;
     --danger-bg: rgba(220, 38, 38, 0.08);
     --shadow: 0 14px 36px rgba(20, 40, 80, 0.14);
     --shadow-sm: 0 8px 18px rgba(20, 40, 80, 0.1);
@@ -275,8 +292,8 @@ body {
 .nav-links a.active {
     color: var(--accent);
     font-weight: 700;
-    background: linear-gradient(135deg, rgba(79, 159, 224, 0.20), rgba(224, 180, 92, 0.16));
-    box-shadow: 0 0 0 1px rgba(79, 159, 224, 0.28) inset, 0 4px 18px rgba(79, 159, 224, 0.28);
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.20), rgba(var(--gold-rgb), 0.16));
+    box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.28) inset, 0 4px 18px rgba(var(--accent-rgb), 0.28);
     animation: navActiveIn 0.35s ease both;
 }
 
@@ -289,7 +306,7 @@ body {
     height: 2px;
     border-radius: 2px;
     background: linear-gradient(90deg, var(--accent), var(--gold));
-    box-shadow: 0 0 8px rgba(224, 180, 92, 0.6);
+    box-shadow: 0 0 8px rgba(var(--gold-rgb), 0.6);
 }
 
 @keyframes navActiveIn {
@@ -358,8 +375,8 @@ body {
     width: fit-content;
 }
 
-.user-role.role-admin     { background: rgba(224, 180, 92, 0.22); color: var(--gold); }
-.user-role.role-usuario   { background: rgba(79, 159, 224, 0.22); color: var(--accent); }
+.user-role.role-admin     { background: rgba(var(--gold-rgb), 0.22); color: var(--gold); }
+.user-role.role-usuario   { background: rgba(var(--accent-rgb), 0.22); color: var(--accent); }
 .user-role.role-inquilino { background: var(--success-bg); color: var(--success); }
 
 .logout-form { margin: 0; }
@@ -509,16 +526,16 @@ footer.site-footer {
 .btn-primary {
     background: linear-gradient(135deg, var(--gold), var(--gold-strong));
     color: #2a1a02;
-    box-shadow: 0 6px 16px rgba(224, 166, 64, 0.35);
+    box-shadow: 0 6px 16px rgba(var(--gold-rgb), 0.35);
 }
-.btn-primary:hover { filter: brightness(1.07); box-shadow: 0 10px 26px rgba(224, 166, 64, 0.5); transform: translateY(-1px); }
+.btn-primary:hover { filter: brightness(1.07); box-shadow: 0 10px 26px rgba(var(--gold-rgb), 0.5); transform: translateY(-1px); }
 
 .btn-secondary {
     background: linear-gradient(135deg, var(--accent), var(--accent-2));
     color: #ffffff;
-    box-shadow: 0 6px 16px rgba(79, 159, 224, 0.35);
+    box-shadow: 0 6px 16px rgba(var(--accent-rgb), 0.35);
 }
-.btn-secondary:hover { filter: brightness(1.08); box-shadow: 0 10px 26px rgba(79, 159, 224, 0.45); transform: translateY(-1px); }
+.btn-secondary:hover { filter: brightness(1.08); box-shadow: 0 10px 26px rgba(var(--accent-rgb), 0.45); transform: translateY(-1px); }
 
 .btn-small {
     background: var(--surface-strong);
@@ -571,7 +588,7 @@ footer.site-footer {
     content: "";
     width: 8px; height: 8px; border-radius: 50%;
     background: var(--gold);
-    box-shadow: 0 0 0 4px rgba(224, 180, 92, 0.25);
+    box-shadow: 0 0 0 4px rgba(var(--gold-rgb), 0.25);
 }
 
 .hero h1 {
@@ -655,7 +672,7 @@ footer.site-footer {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(79, 159, 224, 0.12), transparent 60%);
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), transparent 60%);
     opacity: 0;
     transition: opacity 0.25s ease;
 }
@@ -663,7 +680,7 @@ footer.site-footer {
 .card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow);
-    border-color: rgba(79, 159, 224, 0.4);
+    border-color: rgba(var(--accent-rgb), 0.4);
 }
 .card:hover::after { opacity: 1; }
 
@@ -786,8 +803,8 @@ footer.site-footer {
 
 .badge-verde  { background: var(--success-bg); color: var(--success); }
 .badge-rojo   { background: var(--danger-bg);  color: var(--danger); }
-.badge-ambar  { background: rgba(224, 180, 92, 0.18); color: var(--gold); }
-.badge-azul   { background: rgba(79, 159, 224, 0.18); color: var(--accent); }
+.badge-ambar  { background: rgba(var(--gold-rgb), 0.18); color: var(--gold); }
+.badge-azul   { background: rgba(var(--accent-rgb), 0.18); color: var(--accent); }
 .badge-gris   { background: var(--surface-strong); color: var(--text-muted); }
 
 /* Texto grisado genérico (placeholders tipo "— Sin asignar —" en
@@ -832,7 +849,7 @@ footer.site-footer {
 .search-box input[type="text"]:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(79, 159, 224, 0.22);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.22);
     background: var(--surface-solid);
 }
 .search-box .search-hint {
@@ -925,7 +942,7 @@ footer.site-footer {
 .form-group textarea:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(79, 159, 224, 0.22);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.22);
     background: var(--surface-solid);
 }
 
@@ -1090,7 +1107,7 @@ footer.site-footer {
     margin: 0 auto 14px;
     border-radius: 50%;
     overflow: hidden;
-    box-shadow: 0 0 0 3px rgba(79, 159, 224, 0.25), 0 6px 20px rgba(3, 11, 26, 0.3);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.25), 0 6px 20px rgba(3, 11, 26, 0.3);
 }
 .auth-logo img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -1156,8 +1173,8 @@ footer.site-footer {
    12. PORTAL DEL INQUILINO: tarjetas de estado de cuenta
    ============================================================ */
 
-.stat-card.stat-ok { border-color: rgba(52, 211, 153, 0.4); }
-.stat-card.stat-deuda { border-color: rgba(248, 113, 113, 0.5); }
+.stat-card.stat-ok { border-color: rgba(var(--success-rgb), 0.4); }
+.stat-card.stat-deuda { border-color: rgba(var(--danger-rgb), 0.5); }
 
 .stat-card.stat-ok .stat-value,
 .stat-card.stat-deuda .stat-value,
